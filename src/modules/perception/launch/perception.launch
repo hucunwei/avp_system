@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+
+  <node pkg="perception" type="perception_node" respawn="false" name="perception" output="screen">
+    <rosparam file="$(find perception)/config/perception_config.yaml" command="load" />
+  </node>
+
+  <node name="rviz_perception" pkg="rviz" type="rviz" args="-d $(find perception)/src/ros_viewer/perception.rviz"/>
+  
+</launch>

@@ -27,12 +27,19 @@ include_directories(
 #   common_msgs
 # )
 
+add_library(${PROJECT_NAME}_core
+  src/perception.cpp
+)
+
+add_executable(${PROJECT_NAME}_node
+  src/perception_node.cpp
+)
+
 catkin_package(
   CATKIN_DEPENDS common_msgs
 )
 
-add_executable(${PROJECT_NAME}_node
-        src/perception_node.cpp
-)
+target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME}_core ${catkin_LIBRARIES})
 
-target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES})
+install(TARGETS ${PROJECT_NAME}_node
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

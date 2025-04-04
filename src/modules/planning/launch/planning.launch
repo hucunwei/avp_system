@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+
+  <node pkg="planning" type="planning_node" respawn="false" name="planning" output="screen">
+    <rosparam file="$(find planning)/config/planning_config.yaml" command="load" />
+  </node>
+
+  <node name="rviz_planning" pkg="rviz" type="rviz" args="-d $(find planning)/src/ros_viewer/planning.rviz"/>
+  
+</launch>

@@ -4,4 +4,7 @@ int main(int argc, char **argv) {
     ros::init(argc, argv, "planning_node");
     ros::NodeHandle nh("~");
 
+
+    ros::spin();
+
 }

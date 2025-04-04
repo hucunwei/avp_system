@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+
+  <node pkg="mapping" type="mapping_node" respawn="false" name="mapping" output="screen">
+    <rosparam file="$(find mapping)/config/mapping_config.yaml" command="load" />
+  </node>
+
+  <node name="rviz_mapping" pkg="rviz" type="rviz" args="-d $(find mapping)/src/ros_viewer/mapping.rviz"/>
+  
+</launch>
