@@ -1,7 +1,7 @@
 #include "ros/ros.h"
 
 int main(int argc, char **argv) {
-    ros::init(argc, argv, "mapping_localization_node");
+    ros::init(argc, argv, "localization_node");
     ros::NodeHandle nh("~");
 
 }

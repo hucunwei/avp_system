@@ -4,7 +4,8 @@
     
     <!-- 启动模块 -->
     <include file="$(find avp_system)/modules/perception/launch/perception.launch" />
-    <include file="$(find avp_system)/modules/mapping_localization/launch/localization.launch" />
+    <include file="$(find avp_system)/modules/mapping/launch/mapping.launch" />
+    <include file="$(find avp_system)/modules/localization/launch/localization.launch" />
     <include file="$(find avp_system)/modules/planing/launch/planning.launch" />
     <include file="$(find avp_system)/modules/control/launch/control.launch" />
     

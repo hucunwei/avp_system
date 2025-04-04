@@ -4,6 +4,7 @@ project(avp_system)
 # 包含子模块
 add_subdirectory(modules/common_msgs)
 add_subdirectory(modules/perception)
-add_subdirectory(modules/mapping_localization)
+add_subdirectory(modules/mapping)
+add_subdirectory(modules/localization)
 add_subdirectory(modules/planning)
 add_subdirectory(modules/control)

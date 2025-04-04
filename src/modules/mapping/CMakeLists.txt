@@ -1,6 +1,6 @@
 # mapping_localization/CMakeLists.txt
 cmake_minimum_required(VERSION 2.8.3)
-project(mapping_localization)
+project(mapping)
 
 #set(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_BUILD_TYPE "Debug")
@@ -34,7 +34,7 @@ catkin_package(
 
 
 add_executable(${PROJECT_NAME}_node
-        src/mapping_localization_node.cpp
+        src/mapping_node.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES})
