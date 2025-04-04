@@ -1,0 +1,14 @@
+<launch>
+    <!-- 加载全局参数 -->
+    <rosparam command="load" file="$(find avp_system)/config/system_config.yaml" />
+    
+    <!-- 启动模块 -->
+    <include file="$(find avp_system)/modules/perception/launch/perception.launch" />
+    <include file="$(find avp_system)/modules/mapping_localization/launch/localization.launch" />
+    <include file="$(find avp_system)/modules/planing/launch/planning.launch" />
+    <include file="$(find avp_system)/modules/control/launch/control.launch" />
+    
+    <!-- 启动可视化 -->
+    <!-- <node name="rviz" pkg="rviz" type="rviz" 
+          args="-d $(find avp_system)/rviz/avp_display.rviz" /> -->
+</launch>
