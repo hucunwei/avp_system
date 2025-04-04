@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <launch>
 
-  <node pkg="control" type="control_node" respawn="false" name="control" output="screen">
-    <rosparam file="$(find control)/config/control_config.yaml" command="load" />
+  <node pkg="controller" type="controller_node" respawn="false" name="controller" output="screen">
+    <rosparam file="$(find controller)/config/controller_config.yaml" command="load" />
   </node>
 
-  <node name="rviz_control" pkg="rviz" type="rviz" args="-d $(find control)/src/ros_viewer/controller.rviz"/>
+  <node name="rviz_controller" pkg="rviz" type="rviz" args="-d $(find controller)/src/ros_viewer/controller.rviz"/>
   
 </launch>

@@ -2,6 +2,11 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(perception)
 
+
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/lib/${PROJECT_NAME})
+
 #set(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_BUILD_TYPE "Debug")
 set(CMAKE_CXX_STANDARD 14)
@@ -9,8 +14,9 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall")
 
 find_package(catkin REQUIRED COMPONENTS
+  roscpp 
+  std_msgs
   common_msgs
-  pcl_ros
 )
 
 include_directories(
@@ -36,6 +42,7 @@ add_executable(${PROJECT_NAME}_node
 )
 
 catkin_package(
+  # LIBRARIES ${PROJECT_NAME}_core
   CATKIN_DEPENDS common_msgs
 )
 

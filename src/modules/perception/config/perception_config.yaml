@@ -1,3 +1,4 @@
-modules: perception
+module: perception
 topics:
   camera: /image   #相机topic
+  
