@@ -5,6 +5,6 @@
     <rosparam file="$(find control)/config/control_config.yaml" command="load" />
   </node>
 
-  <node name="rviz_control" pkg="rviz" type="rviz" args="-d $(find control)/src/ros_viewer/control.rviz"/>
+  <node name="rviz_control" pkg="rviz" type="rviz" args="-d $(find control)/src/ros_viewer/controller.rviz"/>
   
 </launch>

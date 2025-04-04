@@ -33,8 +33,17 @@ catkin_package(
 )
 
 
-add_executable(${PROJECT_NAME}_node
-        src/mapping_node.cpp
+
+add_library(${PROJECT_NAME}_core
+  src/mapping.cpp
 )
 
-target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES})
+add_executable(${PROJECT_NAME}_node
+  src/mapping_node.cpp
+)
+
+catkin_package(
+  CATKIN_DEPENDS common_msgs
+)
+
+target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME}_core ${catkin_LIBRARIES})

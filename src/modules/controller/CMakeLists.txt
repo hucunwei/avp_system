@@ -1,7 +1,7 @@
 # control/CMakeLists.txt
 
 cmake_minimum_required(VERSION 2.8.3)
-project(control)
+project(controller)
 #set(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_BUILD_TYPE "Debug")
 set(CMAKE_CXX_STANDARD 14)
@@ -32,8 +32,17 @@ catkin_package(
   CATKIN_DEPENDS common_msgs
 )
 
-add_executable(${PROJECT_NAME}_node
-        src/control_node.cpp
+
+add_library(${PROJECT_NAME}_core
+  src/controller.cpp
 )
 
-target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES})
+add_executable(${PROJECT_NAME}_node
+  src/controller_node.cpp
+)
+
+catkin_package(
+  CATKIN_DEPENDS common_msgs
+)
+
+target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME}_core ${catkin_LIBRARIES})
