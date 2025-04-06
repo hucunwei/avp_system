@@ -10,6 +10,7 @@ CPerception::CPerception(bool is_label, bool save_ipm) : is_label_(is_label), sa
 	ipm_.AddCamera(CONFIG_DIR "1_intrinsic.yaml", CONFIG_DIR "1_extrinsic.yaml");
 	ipm_.AddCamera(CONFIG_DIR "2_intrinsic.yaml", CONFIG_DIR "2_extrinsic.yaml");
 	ipm_.AddCamera(CONFIG_DIR "3_intrinsic.yaml", CONFIG_DIR "3_extrinsic.yaml");
+    ipm_.CreateIPMToImageMap();
     cv::namedWindow("perception", cv::WINDOW_NORMAL);
 }
 

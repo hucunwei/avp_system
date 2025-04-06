@@ -74,26 +74,9 @@ void MEICamera::DebugString() const {
 }
 
 IPM::IPM() {}
-
-void IPM::AddCamera(const std::string& intrinsicsFile,
-                    const std::string& extrinsicFile) {
-  cameras_.emplace_back(intrinsicsFile, extrinsicFile);
-  std::cout << "---------ipm add new camera ---------" << std::endl;
-  cameras_.back().DebugString();
-}
-
-cv::Mat IPM::GenerateIPMImage(const std::vector<cv::Mat>& images) const {
-  // Initialize a black IPM image with dimensions ipm_img_h_ x ipm_img_w_ and 3 channels (RGB)
-  cv::Mat ipm_image = cv::Mat::zeros(ipm_img_h_, ipm_img_w_, CV_8UC3);
-
-  // Check if the number of input images matches the number of cameras
-  if (images.size() != cameras_.size()) {
-    // If not, print an error message and return the initialized black IPM image
-    std::cout << "IPM not init normaly !" << std::endl;
-    return ipm_image;
-  }
-  
+void IPM::CreateIPMToImageMap(){
   // Iterate over each pixel in the IPM image
+  std::cout << ipm_img_w_ << ", " << ipm_img_h_ << ", " << cameras_.size() << std::endl;
   for (int u = 0; u < ipm_img_w_; ++u) {
     for (int v = 0; v < ipm_img_h_; ++v) {
       // Calculate the point p_v in vehicle coordinates, p_v is corresponding to the current pixel (u, v).
@@ -102,9 +85,8 @@ cv::Mat IPM::GenerateIPMImage(const std::vector<cv::Mat>& images) const {
                           (0.5 * ipm_img_w_ - v) * pixel_scale_, 0);
 
       // Iterate over each camera
-      for (size_t i = 0; i < cameras_.size(); ++i) {
+      for (int i = 0; i < cameras_.size(); ++i) {
         // Project the vehile point p_v into the image plane uv
-        ////////////////////////TODO begin///////////////////////
         Eigen::Vector3d p_c = cameras_[i].T_vehicle_cam_.inverse() * p_v;
         if (p_c[2] < 0) {
           continue;
@@ -132,7 +114,6 @@ cv::Mat IPM::GenerateIPMImage(const std::vector<cv::Mat>& images) const {
         uv0 = static_cast<int>(uv.at<double>(0, 0));
         uv1 = static_cast<int>(uv.at<double>(1, 0) + 1);
 
-        ////////////////////////TODO end/////////////////////
         // (uv0, uv1) is the projected pixel from p_v to cameras_[i]
         // Skip this point if the projected coordinates are out of bounds of the camera image
         if (uv0 < 0 || uv0 >= cameras_[i].width_ || uv1 < 0 ||
@@ -140,6 +121,42 @@ cv::Mat IPM::GenerateIPMImage(const std::vector<cv::Mat>& images) const {
           continue;
         }
 
+        ipm_image_map_.insert(std::make_pair(PixelIndex{u, v, i}, PixelId{uv0, uv1}));
+      }
+    }
+  }
+}
+
+void IPM::AddCamera(const std::string& intrinsicsFile,
+                    const std::string& extrinsicFile) {
+  cameras_.emplace_back(intrinsicsFile, extrinsicFile);
+  std::cout << "---------ipm add new camera ---------" << std::endl;
+  cameras_.back().DebugString();
+}
+
+cv::Mat IPM::GenerateIPMImage(const std::vector<cv::Mat>& images) const {
+  // Initialize a black IPM image with dimensions ipm_img_h_ x ipm_img_w_ and 3 channels (RGB)
+  cv::Mat ipm_image = cv::Mat::zeros(ipm_img_h_, ipm_img_w_, CV_8UC3);
+
+  // Check if the number of input images matches the number of cameras
+  if (images.size() != cameras_.size()) {
+    // If not, print an error message and return the initialized black IPM image
+    std::cout << "IPM not init normaly !" << std::endl;
+    return ipm_image;
+  }
+  
+  // Iterate over each pixel in the IPM image
+  #pragma omp parallel for collapse(1)
+  for (int u = 0; u < ipm_img_w_; ++u) {
+    for (int v = 0; v < ipm_img_h_; ++v) {
+      // Iterate over each camera
+      for (int i = 0; i < cameras_.size(); ++i) {
+        const auto it = ipm_image_map_.find(PixelIndex{u, v, i});
+        if(it == ipm_image_map_.end()){
+          continue;
+        }
+        const int& uv0 = it->second.x;
+        const int& uv1 = it->second.y;
         // Get the pixel color from the camera image and set it to the IPM image
         // If the IPM image pixel is still black (not yet filled), directly assign the color
         if (ipm_image.at<cv::Vec3b>(v, u) == cv::Vec3b(0, 0, 0)) {
