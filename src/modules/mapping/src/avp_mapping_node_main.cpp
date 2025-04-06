@@ -83,6 +83,27 @@ int main(int argc, char **argv) {
 
   IPMSegImageSubscriber ipm_seg_image_subscriber(nh, ipm_seg_topic);
 
+  ros::Rate rate(10);
+  while (ros::ok())
+  {
+    ros::spinOnce();
+
+    auto gps_odom_buffer = gps_odom_subscriber.getBuffer(true);
+    for (const auto &pose : gps_odom_buffer) {
+      mapping.processPose(pose);
+    }
+
+    if(ipm_seg_image_subscriber.isBufferEmpty() == false)
+    {
+      sensor_msgs::CompressedImage ipm_image = ipm_seg_image_subscriber.getBufferFront();
+      cv::Mat cv_image = cv::imdecode(cv::Mat(ipm_image.data), cv::IMREAD_COLOR);
+
+      mapping.processImage(ipm_image.header.stamp.toSec(), cv_image);
+    }
+
+    rate.sleep();
+  }
+
 #endif
   // save map data
   mapping.getMap().save(map_data_out_path + "avp_map.bin");

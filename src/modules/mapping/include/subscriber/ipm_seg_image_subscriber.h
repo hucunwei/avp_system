@@ -12,6 +12,10 @@ class IPMSegImageSubscriber {
 
     std::deque<sensor_msgs::CompressedImage> getBuffer() ;
     sensor_msgs::CompressedImage getBufferFront();
+
+    bool isBufferEmpty() const{
+        return image_buffer_.empty();
+    }
     
     private:
         ros::Subscriber sub_;

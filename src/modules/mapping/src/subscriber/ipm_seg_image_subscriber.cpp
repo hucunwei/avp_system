@@ -23,6 +23,7 @@ sensor_msgs::CompressedImage IPMSegImageSubscriber::getBufferFront(){
     std::lock_guard<std::mutex> lock(buffer_mutex_);
     auto result = image_buffer_.front();
     image_buffer_.pop_front();
+    return result;
 }
     
 
