@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   FILES
   Pose6D.msg
+  CanBusData.msg
 )
 
 generate_messages(

@@ -2,6 +2,10 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(avp_mapping)
 
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/lib/${PROJECT_NAME})
+
 set(CMAKE_BUILD_TYPE "Release")
 # set(CMAKE_BUILD_TYPE "Debug")
 set(CMAKE_CXX_STANDARD 14)
@@ -17,13 +21,13 @@ include_directories(
     ${EIGEN3_INCLUDE_DIR}
 )
 
-add_library(${PROJECT_NAME} SHARED
+add_library(${PROJECT_NAME}_core SHARED
     src/pose_interpolation.cpp
     src/avp_mapping.cpp
     src/map.cpp
     src/slot.cpp
 )
-target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS})
+target_link_libraries(${PROJECT_NAME}_core ${OpenCV_LIBS})
 
 if ("$ENV{ROS_VERSION}" STREQUAL "1")
 
@@ -46,7 +50,7 @@ if ("$ENV{ROS_VERSION}" STREQUAL "1")
     )
 
     add_executable(${PROJECT_NAME}_node src/avp_mapping_node_main.cpp src/ros_viewer/mapping_ros_viewer.cpp)
-    target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME} ${catkin_LIBRARIES})
+    target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME}_core ${catkin_LIBRARIES})
 
     install(TARGETS ${PROJECT_NAME}_node
       RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
