@@ -1,4 +1,12 @@
 module: avp_mapping
 ipm_data_path: /home/hucunwei/study/avp/assignment/L9/git/ipm_data/
+
+#map输出路径
+map_data_out_path: /home/hucunwei/study/avp/assignment/L9/git/
+
 auto_run: true
 show_img: true
+
+topics:
+  ipm_seg: /ipm_seg
+  truth_odom: /gps_odom

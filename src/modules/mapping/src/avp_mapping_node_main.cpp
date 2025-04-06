@@ -12,6 +12,9 @@
 #include "avp_mapping.h"
 #include "ros_viewer/mapping_ros_viewer.h"
 
+#include "subscriber/ipm_seg_image_subscriber.h"
+#include "subscriber/gps_odom_subscriber.h"
+
 int main(int argc, char **argv) {
   ros::init(argc, argv, "avp_mapping");
   ros::NodeHandle nh("~");
@@ -23,6 +26,11 @@ int main(int argc, char **argv) {
   AvpMapping mapping;
   mapping.setViewer(viewer);
 
+  std::string map_data_out_path;
+  nh.param("map_data_out_path", map_data_out_path, std::string("~")); 
+  std::cout << map_data_out_path << std::endl;
+
+#if 0
   std::string ipm_data_path;
   nh.param("ipm_data_path", ipm_data_path, std::string("~/ipm_data/")); 
   std::cout << ipm_data_path << std::endl;
@@ -62,8 +70,21 @@ int main(int argc, char **argv) {
     // process image
     mapping.processImage(time, cv::imread(path + "/" + img_name));
   }
+#else
 
+  std::string ipm_seg_topic;
+  nh.param("ipm_seg", ipm_seg_topic, std::string("/ipm_seg")); 
+  std::string truth_odom_topic;
+  nh.param("truth_odom", truth_odom_topic, std::string("/gps_odom")); 
+
+  std::cout << "ipm_seg_topic: " << ipm_seg_topic << ", truth_odom_topic: " << truth_odom_topic << std::endl;
+
+  GpsOdometrySubscriber gps_odom_subscriber(nh, truth_odom_topic);
+
+  IPMSegImageSubscriber ipm_seg_image_subscriber(nh, ipm_seg_topic);
+
+#endif
   // save map data
-  mapping.getMap().save(path + "/avp_map.bin");
+  mapping.getMap().save(map_data_out_path + "avp_map.bin");
   return 0;
 }
