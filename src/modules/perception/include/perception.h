@@ -8,7 +8,7 @@
 class CPerception {
 public:
     CPerception(bool is_label, bool save_ipm);
-    ~CPerception(){};
+    ~CPerception();
 
     void AddImu(const sensor_msgs::ImuConstPtr& imu);
 
@@ -22,4 +22,5 @@ private:
     IPM ipm_;
     bool is_label_;
     bool save_ipm_ = false;
+  std::ofstream ofs_train_csv_;
 };

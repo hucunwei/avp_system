@@ -38,6 +38,7 @@ include_directories(
 add_definitions(-DCONFIG_DIR="${PROJECT_SOURCE_DIR}/config/")
 add_definitions(-DIPM_RAW_DIR="${PROJECT_SOURCE_DIR}/ipm_raw/")
 add_definitions(-DIPM_LABEL_DIR="${PROJECT_SOURCE_DIR}/ipm_label/")
+add_definitions(-DIPM_TRAIN_DIR="${PROJECT_SOURCE_DIR}/ipm_train/")
 
 add_library(${PROJECT_NAME}_core
   src/perception.cpp

@@ -27,6 +27,7 @@ int main(int argc, char **argv) {
   if (is_label) {
     seg = "_seg";
   }
+
   std::string front_topic("/camera/front" + seg);
   std::string back_topic("/camera/back" + seg);
   std::string left_topic("/camera/left" + seg);
