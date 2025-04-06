@@ -26,6 +26,9 @@ add_library(${PROJECT_NAME}_core SHARED
     src/avp_mapping.cpp
     src/map.cpp
     src/slot.cpp
+
+    src/subscriber/ipm_seg_image_subscriber.cpp
+    src/subscriber/gps_odom_subscriber.cpp
 )
 target_link_libraries(${PROJECT_NAME}_core ${OpenCV_LIBS})
 
@@ -49,7 +52,13 @@ if ("$ENV{ROS_VERSION}" STREQUAL "1")
       CATKIN_DEPENDS common_msgs
     )
 
-    add_executable(${PROJECT_NAME}_node src/avp_mapping_node_main.cpp src/ros_viewer/mapping_ros_viewer.cpp)
+    add_executable(${PROJECT_NAME}_node 
+      src/avp_mapping_node_main.cpp 
+      src/ros_viewer/mapping_ros_viewer.cpp
+      src/ros_viewer/mapping_ros_viewer.cpp
+      src/ros_viewer/viewer_interface.cpp
+    )
+
     target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME}_core ${catkin_LIBRARIES})
 
     install(TARGETS ${PROJECT_NAME}_node
