@@ -1,1 +1,4 @@
-module: mapping
+module: avp_mapping
+ipm_data_path: /home/hucunwei/study/avp/assignment/L9/git/ipm_data/
+auto_run: true
+show_img: true

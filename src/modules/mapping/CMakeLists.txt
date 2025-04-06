@@ -1,54 +1,54 @@
 # mapping_localization/CMakeLists.txt
 cmake_minimum_required(VERSION 2.8.3)
-project(mapping)
+project(avp_mapping)
 
-#set(CMAKE_BUILD_TYPE "Release")
-set(CMAKE_BUILD_TYPE "Debug")
+set(CMAKE_BUILD_TYPE "Release")
+# set(CMAKE_BUILD_TYPE "Debug")
 set(CMAKE_CXX_STANDARD 14)
 #set(CMAKE_CXX_FLAGS "-std=c++17 -march=native")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall")
 
-find_package(catkin REQUIRED COMPONENTS
-  roscpp 
-  std_msgs
-  common_msgs
-)
-
-# add_message_files(
-#   FILES
-# #   SensorCalibration.msg
-# )
-
-# generate_messages(
-#   DEPENDENCIES
-#   common_msgs
-# )
-
+include(cmake/FindEigen.cmake)
+find_package(Eigen3 REQUIRED)
+find_package(OpenCV REQUIRED)
 include_directories(
     include
-    ${catkin_INCLUDE_DIRS}
+    ${OpenCV_INCLUDE_DIRS}
+    ${EIGEN3_INCLUDE_DIR}
 )
 
-catkin_package(
-  CATKIN_DEPENDS common_msgs
+add_library(${PROJECT_NAME} SHARED
+    src/pose_interpolation.cpp
+    src/avp_mapping.cpp
+    src/map.cpp
+    src/slot.cpp
 )
+target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS})
 
+if ("$ENV{ROS_VERSION}" STREQUAL "1")
 
+    # add_message_files(
+    #   FILES
+    # #   SensorCalibration.msg
+    # )
 
-add_library(${PROJECT_NAME}_core
-  src/mapping.cpp
-)
+    # generate_messages(
+    #   DEPENDENCIES
+    #   common_msgs
+    # )
 
-add_executable(${PROJECT_NAME}_node
-  src/mapping_node.cpp
-)
+    message(STATUS "Build ros node")
+    find_package(catkin REQUIRED COMPONENTS roscpp std_msgs geometry_msgs nav_msgs tf)
+    include_directories(${catkin_INCLUDE_DIRS})
 
-catkin_package(
-  CATKIN_DEPENDS common_msgs
-)
+    catkin_package(
+      CATKIN_DEPENDS common_msgs
+    )
 
-target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME}_core ${catkin_LIBRARIES})
+    add_executable(${PROJECT_NAME}_node src/avp_mapping_node_main.cpp src/ros_viewer/mapping_ros_viewer.cpp)
+    target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME} ${catkin_LIBRARIES})
 
+    install(TARGETS ${PROJECT_NAME}_node
+      RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
-install(TARGETS ${PROJECT_NAME}_node
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+endif ()
