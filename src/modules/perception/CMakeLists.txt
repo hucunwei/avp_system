@@ -21,11 +21,43 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(OpenCV REQUIRED)
+#find_package(PythonLibs 3.8 REQUIRED)
+
+find_package(Python3 REQUIRED COMPONENTS Development NumPy)
+## Set Python source directory
+#set(PYTHON_SOURCE_DIR "${CMAKE_SOURCE_DIR}/python")
+find_package(OpenCV REQUIRED)
+find_package(catkin REQUIRED COMPONENTS
+        roscpp
+        sensor_msgs
+        image_transport
+        cv_bridge
+)
+
+# Locate NumPy headers
+execute_process(
+        COMMAND python3 -c "import numpy; print(numpy.get_include())"
+        OUTPUT_VARIABLE NUMPY_INCLUDE_DIRS
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+#include_directories(
+#        include
+#        ${catkin_INCLUDE_DIRS}
+#        ${Python_INCLUDE_DIRS}
+#        ${NUMPY_INCLUDE_DIRS}
+#        ${OpenCV_INCLUDE_DIRS}
+#)
 
 include_directories(
     include
     ${catkin_INCLUDE_DIRS}
-    ${OpenCV_INCLUDE_DIRS})
+    ${OpenCV_INCLUDE_DIRS}
+#    ${Python_INCLUDE_DIRS}
+    ${Python3_INCLUDE_DIRS}
+    ${Python3_NumPy_INCLUDE_DIRS}
+#    ${NumPy_INCLUDE_DIRS}
+)
 
 # add_message_files(
 #   FILES
@@ -42,6 +74,7 @@ add_definitions(-DIPM_TRAIN_DIR="${PROJECT_SOURCE_DIR}/ipm_train/")
 
 add_library(${PROJECT_NAME}_core
   src/perception.cpp
+  src/python_segmentation.cpp
   src/ipm.cc
 )
 
@@ -54,7 +87,24 @@ catkin_package(
   CATKIN_DEPENDS common_msgs
 )
 
-target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME}_core ${catkin_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME}_core ${catkin_LIBRARIES} ${OpenCV_LIBS} ${Python3_LIBRARIES})
 
 install(TARGETS ${PROJECT_NAME}_node
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+# Install Python scripts
+install(DIRECTORY scripts/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/scripts
+        USE_SOURCE_PERMISSIONS
+)
+
+# Mark Python scripts as executable
+catkin_install_python(PROGRAMS scripts/segmentation.py
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/scripts
+)
+
+install(DIRECTORY config/ models/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+        USE_SOURCE_PERMISSIONS)
+
+
