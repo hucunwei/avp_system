@@ -9,10 +9,13 @@
 struct PythonSegmentation::Impl {
     PyObject* pProcessor = nullptr;
     PyObject* pProcessMethod = nullptr;
+    bool initialized = false;
 
     ~Impl() {
+        PyGILState_STATE gstate = PyGILState_Ensure();
         Py_XDECREF(pProcessMethod);
         Py_XDECREF(pProcessor);
+        PyGILState_Release(gstate);
     }
 };
 
@@ -20,18 +23,24 @@ PythonSegmentation::PythonSegmentation(const std::string& config_path, const std
     : pImpl(std::make_unique<Impl>()) {
 
     // Initialize Python interpreter
-    Py_Initialize();
+    Py_InitializeEx(0);
     if (!Py_IsInitialized()) {
-        throw std::runtime_error("Failed to initialize Python interpreter");
+        throw std::runtime_error("Python interpreter initialization failed");
     }
 
-    // Initialize NumPy
-    if (_import_array() < 0) {
-        PyErr_Print();
-        throw std::runtime_error("Failed to import numpy.core.multiarray");
+    // Initialize thread support
+    if (!PyEval_ThreadsInitialized()) {
+        PyEval_InitThreads();
     }
+    PyGILState_STATE gstate = PyGILState_Ensure();
 
     try {
+        // MANUAL NUMPY INITIALIZATION (FIXED VERSION)
+        if (_import_array() < 0) {
+            PyErr_Print();
+            throw std::runtime_error("NumPy initialization failed");
+        }
+
         // Get package path
         std::string pkg_path = ros::package::getPath("perception");
 
@@ -39,16 +48,16 @@ PythonSegmentation::PythonSegmentation(const std::string& config_path, const std
         std::string python_path_cmd =
             "import sys\n"
             "sys.path.insert(0, '" + pkg_path + "/scripts')\n"
-            "sys.path.insert(0, '" + pkg_path + "/python')\n"
-            "sys.path.insert(0, '" + config_path.substr(0, config_path.find_last_of("/")) + "')\n";
+            "sys.path.insert(0, '" + pkg_path + "/lib')\n"  // Explicitly add lib
+            "sys.path.insert(0, '" + pkg_path + "/config')\n";
 
         PyRun_SimpleString(python_path_cmd.c_str());
 
         // Import module
-        PyObject* pModule = PyImport_ImportModule("perception.segmentation");
+        PyObject* pModule = PyImport_ImportModule("segmentation");
         if (!pModule) {
             PyErr_Print();
-            throw std::runtime_error("Failed to import Python module 'perception.segmentation'");
+            throw std::runtime_error("Failed to import segmentation module");
         }
 
         // Get processor class
@@ -62,11 +71,6 @@ PythonSegmentation::PythonSegmentation(const std::string& config_path, const std
 
         // Create processor instance
         PyObject* pArgs = PyTuple_New(2);
-        if (!pArgs) {
-            Py_XDECREF(pClass);
-            throw std::runtime_error("Failed to create arguments tuple");
-        }
-
         PyTuple_SetItem(pArgs, 0, PyUnicode_FromString(config_path.c_str()));
         PyTuple_SetItem(pArgs, 1, PyUnicode_FromString(weight_path.c_str()));
 
@@ -76,7 +80,7 @@ PythonSegmentation::PythonSegmentation(const std::string& config_path, const std
 
         if (!pImpl->pProcessor) {
             PyErr_Print();
-            throw std::runtime_error("Failed to create SegmentationProcessor instance");
+            throw std::runtime_error("Failed to create processor instance");
         }
 
         // Get process method
@@ -86,48 +90,51 @@ PythonSegmentation::PythonSegmentation(const std::string& config_path, const std
             throw std::runtime_error("Failed to get process method");
         }
 
+        pImpl->initialized = true;
+        PyGILState_Release(gstate);
     } catch (...) {
+        PyGILState_Release(gstate);
         Py_Finalize();
         throw;
     }
 }
 
 PythonSegmentation::~PythonSegmentation() {
-    // Impl's destructor handles cleanup
+    // Impl destructor handles cleanup
 }
 
 cv::Mat PythonSegmentation::process(const cv::Mat& input) {
-    if (!pImpl->pProcessMethod) {
+    if (!pImpl->initialized) {
         throw std::runtime_error("Processor not initialized");
     }
 
-    // Convert cv::Mat to numpy array
-    npy_intp dimensions[3] = {input.rows, input.cols, input.channels()};
-    PyObject* pInputArray = PyArray_SimpleNewFromData(
-        3, dimensions, NPY_UINT8, (void*)input.data
-    );
-    if (!pInputArray) {
-        PyErr_Print();
-        throw std::runtime_error("Failed to create numpy array from cv::Mat");
-    }
-
+    PyGILState_STATE gstate = PyGILState_Ensure();
+    PyObject* pInputArray = nullptr;
     PyObject* pResult = nullptr;
     cv::Mat result;
 
     try {
+        // Convert cv::Mat to numpy array
+        npy_intp dimensions[3] = {input.rows, input.cols, input.channels()};
+        pInputArray = PyArray_SimpleNewFromData(3, dimensions, NPY_UINT8, (void*)input.data);
+        if (!pInputArray) {
+            PyErr_Print();
+            throw std::runtime_error("Failed to create numpy array");
+        }
+
         // Call Python method
         pResult = PyObject_CallFunctionObjArgs(pImpl->pProcessMethod, pInputArray, nullptr);
         Py_DECREF(pInputArray);
 
         if (!pResult) {
             PyErr_Print();
-            throw std::runtime_error("Python process method failed");
+            throw std::runtime_error("Python processing failed");
         }
 
         // Convert result to cv::Mat
         PyArrayObject* np_array = reinterpret_cast<PyArrayObject*>(pResult);
-        if (!np_array || PyArray_NDIM(np_array) != 3 || PyArray_TYPE(np_array) != NPY_UINT8) {
-            throw std::runtime_error("Python returned invalid array format");
+        if (PyArray_NDIM(np_array) != 3 || PyArray_TYPE(np_array) != NPY_UINT8) {
+            throw std::runtime_error("Invalid numpy array format");
         }
 
         result = cv::Mat(
@@ -138,10 +145,11 @@ cv::Mat PythonSegmentation::process(const cv::Mat& input) {
         ).clone();
 
         Py_DECREF(pResult);
-
+        PyGILState_Release(gstate);
     } catch (...) {
         Py_XDECREF(pInputArray);
         Py_XDECREF(pResult);
+        PyGILState_Release(gstate);
         throw;
     }
 

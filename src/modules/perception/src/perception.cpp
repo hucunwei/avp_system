@@ -75,19 +75,19 @@ void CPerception::GetIPMImage(const sensor_msgs::CompressedImageConstPtr& image0
     }
 
 	PyRun_SimpleString("import sys; print('Python paths:', sys.path)");
-//    try {
-//      // Process image
-//      cv::Mat ipm_seg = processor_->process(ipm_img);
-//      // Publish result
-//      std_msgs::Header header;
-//      header.stamp = image0->header.stamp;  // Set timestamp
-//      header.frame_id = "ipm_frame";    // Optional, for TF or visualization in RViz
-//
-//      sensor_msgs::ImagePtr msg = cv_bridge::CvImage(header, "bgr8", ipm_seg).toImageMsg(); //mono8
-//      image_pub_.publish(msg);
-//    } catch (const std::exception& e) {
-//      ROS_ERROR("perception failed: %s", e.what());
-//    }
+    try {
+      // Process image
+      cv::Mat ipm_seg = processor_->process(ipm_img);
+      // Publish result
+      std_msgs::Header header;
+      header.stamp = image0->header.stamp;  // Set timestamp
+      header.frame_id = "ipm_frame";    // Optional, for TF or visualization in RViz
+
+      sensor_msgs::ImagePtr msg = cv_bridge::CvImage(header, "bgr8", ipm_seg).toImageMsg(); //mono8
+      image_pub_.publish(msg);
+    } catch (const std::exception& e) {
+      ROS_ERROR("perception failed: %s", e.what());
+    }
     cv::waitKey(1);
 
 }

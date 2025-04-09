@@ -9,7 +9,7 @@ class PythonSegmentation {
 public:
   PythonSegmentation(const std::string& config_path, const std::string& weight_path);
   ~PythonSegmentation();
-
+  static void init_numpy();
   cv::Mat process(const cv::Mat& input);
 
   // Non-copyable

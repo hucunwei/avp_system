@@ -6,35 +6,43 @@ import torch
 import torch.nn.functional as F
 import numpy as np
 import cv2
-from lib.data.transform_cv2 import T
+
+
+# # Path manipulation for ROS compatibility
+# pkg_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# if pkg_path not in sys.path:
+#     sys.path.insert(0, pkg_path)
+#
+# # Import config directly from package
+# from config.bisenetv1_SUPS import cfg  # Direct import without lib
+
+# # Add package root to path
+# pkg_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# if pkg_root not in sys.path:
+#     sys.path.insert(0, pkg_root)
+
+# Add both package root and lib directory
+pkg_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+lib_path = os.path.join(pkg_root, 'lib')
+
+for path in [pkg_root, lib_path]:
+    if path not in sys.path:
+        sys.path.insert(0, path)
+
+import lib.data.transform_cv2 as T
 from lib.models import model_factory
-from configs import set_cfg_from_file
+from config import set_cfg_from_file
 
-def add_python_paths():
-    """Handle path additions more robustly"""
-    # Package directory
-    pkg_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-    # Possible ROS paths
-    ros_paths = [
-        os.path.join(pkg_dir, '../../../../../devel/lib/python3/dist-packages'),
-        '/opt/ros/noetic/lib/python3/dist-packages',  # Adjust for your ROS version
-        os.path.join(os.environ.get('ROS_WORKSPACE', ''), 'devel/lib/python3/dist-packages')
-    ]
-
-    # Add unique paths that exist
-    for path in [pkg_dir] + ros_paths:
-        if path not in sys.path and os.path.exists(path):
-            sys.path.insert(0, path)
-
-add_python_paths()
+# # Now use ABSOLUTE imports
+# from config.bisenetv1_SUPS import cfg  # Direct import
 
 class SegmentationProcessor:
     def __init__(self, config_path, weight_path):
+        """Initialize segmentation model with config and weights"""
         self.cfg = set_cfg_from_file(config_path)
         self.palette = np.random.randint(0, 256, (256, 3), dtype=np.uint8)
 
-        # Device setup with fallback
+        # Device configuration
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
         # Model setup
@@ -46,13 +54,14 @@ class SegmentationProcessor:
         self.net.eval()
         self.net.to(self.device)
 
+        # Image transformation
         self.to_tensor = T.ToTensor(
             mean=(0.3257, 0.3690, 0.3223),
             std=(0.2112, 0.2148, 0.2115),
         )
 
     def process(self, input_image_np):
-        """Process input image (BGR numpy array) and return output (BGR numpy array)"""
+        """Process BGR numpy array and return segmentation result"""
         try:
             # Convert and preprocess
             im = cv2.cvtColor(input_image_np, cv2.COLOR_BGR2RGB)
@@ -73,5 +82,5 @@ class SegmentationProcessor:
             return self.palette[out]
 
         except Exception as e:
-            print(f"Error during processing: {str(e)}")
+            print(f"[Segmentation] Processing error: {str(e)}")
             raise

@@ -92,19 +92,24 @@ target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME}_core ${catkin_LIBRARI
 install(TARGETS ${PROJECT_NAME}_node
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
-# Install Python scripts
-install(DIRECTORY scripts/
-        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/scripts
-        USE_SOURCE_PERMISSIONS
+# Install all necessary directories
+install(DIRECTORY
+        scripts/
+        config/
+        models/
+        lib /
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
-# Mark Python scripts as executable
+# Make Python script executable
 catkin_install_python(PROGRAMS scripts/segmentation.py
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/scripts
 )
+## Install Python scripts
+#install(DIRECTORY scripts/
+#        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/scripts
+#        USE_SOURCE_PERMISSIONS
+#)
 
-install(DIRECTORY config/ models/
-        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-        USE_SOURCE_PERMISSIONS)
 
 
