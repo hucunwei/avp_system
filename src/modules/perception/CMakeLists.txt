@@ -21,11 +21,42 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(OpenCV REQUIRED)
+find_package(PythonLibs 3.8 REQUIRED)
+
+#find_package(Python3 REQUIRED COMPONENTS Development NumPy)
+## Set Python source directory
+#set(PYTHON_SOURCE_DIR "${CMAKE_SOURCE_DIR}/python")
+find_package(PythonLibs 3.6 REQUIRED)
+find_package(OpenCV REQUIRED)
+find_package(catkin REQUIRED COMPONENTS
+        roscpp
+        sensor_msgs
+        image_transport
+        cv_bridge
+)
+
+# Locate NumPy headers
+execute_process(
+        COMMAND python3 -c "import numpy; print(numpy.get_include())"
+        OUTPUT_VARIABLE NUMPY_INCLUDE_DIRS
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+#include_directories(
+#        include
+#        ${catkin_INCLUDE_DIRS}
+#        ${Python_INCLUDE_DIRS}
+#        ${NUMPY_INCLUDE_DIRS}
+#        ${OpenCV_INCLUDE_DIRS}
+#)
 
 include_directories(
     include
     ${catkin_INCLUDE_DIRS}
-    ${OpenCV_INCLUDE_DIRS})
+    ${OpenCV_INCLUDE_DIRS}
+    ${Python_INCLUDE_DIRS}
+    ${NumPy_INCLUDE_DIRS}
+)
 
 # add_message_files(
 #   FILES
@@ -47,6 +78,7 @@ add_library(${PROJECT_NAME}_core
 
 add_executable(${PROJECT_NAME}_node
   src/perception_node.cpp
+  src/python_segmentation.cpp
 )
 
 catkin_package(
@@ -54,7 +86,7 @@ catkin_package(
   CATKIN_DEPENDS common_msgs
 )
 
-target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME}_core ${catkin_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME}_core ${catkin_LIBRARIES} ${OpenCV_LIBS} ${Python_LIBRARIES})
 
-install(TARGETS ${PROJECT_NAME}_node
+install(TARGETS ${PROJECT_NAME}_node scripts/ config/ models/
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
