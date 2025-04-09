@@ -16,15 +16,6 @@
   <license>TODO</license>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>python3-numpy</build_depend>
-  <build_depend>python3-opencv</build_depend>
-  <exec_depend>python3-numpy</exec_depend>
-  <exec_depend>python3-opencv</exec_depend>
-  <exec_depend>python3-pytorch</exec_depend>
-
-<!--  &lt;!&ndash; Existing ROS deps &ndash;&gt;-->
-<!--  <depend>image_transport</depend>-->
-<!--  <depend>cv_bridge</depend>-->
 
   <build_depend>roscpp</build_depend>
   <build_depend>common_msgs</build_depend>

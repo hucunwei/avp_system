@@ -78,7 +78,6 @@ add_library(${PROJECT_NAME}_core
 
 add_executable(${PROJECT_NAME}_node
   src/perception_node.cpp
-  src/python_segmentation.cpp
 )
 
 catkin_package(
@@ -88,5 +87,5 @@ catkin_package(
 
 target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME}_core ${catkin_LIBRARIES} ${OpenCV_LIBS} ${Python_LIBRARIES})
 
-install(TARGETS ${PROJECT_NAME}_node scripts/ config/ models/
+install(TARGETS ${PROJECT_NAME}_node
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
