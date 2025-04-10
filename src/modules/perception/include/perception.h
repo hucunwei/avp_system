@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ipm.h"
-#include "python_segmentation.h"
 
 #include "ros/ros.h"
 #include <nav_msgs/Odometry.h>
@@ -24,7 +23,6 @@ public:
                   const sensor_msgs::CompressedImageConstPtr& image3);
 private:
     IPM ipm_;
-  std::unique_ptr<PythonSegmentation> processor_;
     image_transport::ImageTransport it_;
     image_transport::Publisher image_pub_;
     bool is_label_;
