@@ -29,6 +29,8 @@ add_library(${PROJECT_NAME}_core SHARED
 
     src/subscriber/ipm_seg_image_subscriber.cpp
     src/subscriber/gps_odom_subscriber.cpp
+
+    src/data_pretreat/data_pretreat.cpp
 )
 target_link_libraries(${PROJECT_NAME}_core ${OpenCV_LIBS})
 

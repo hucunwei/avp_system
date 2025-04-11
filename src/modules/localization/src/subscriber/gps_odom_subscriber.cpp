@@ -52,5 +52,5 @@ bool GpsOdometrySubscriber::getBufferFront(nav_msgs::Odometry& gps_odom_msg){
     else
     {   
         return false;
-    }  
+    }    
 }

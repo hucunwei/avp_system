@@ -15,6 +15,8 @@
 #include "subscriber/ipm_seg_image_subscriber.h"
 #include "subscriber/gps_odom_subscriber.h"
 
+#include "data_pretreat/data_pretreat.h"
+
 int main(int argc, char **argv) {
   ros::init(argc, argv, "avp_mapping");
   ros::NodeHandle nh("~");
@@ -83,20 +85,25 @@ int main(int argc, char **argv) {
 
   IPMSegImageSubscriber ipm_seg_image_subscriber(nh, ipm_seg_topic);
 
-  ros::Rate rate(10);
+  ros::Rate rate(20);
   while (ros::ok())
   {
     ros::spinOnce();
 
     auto gps_odom_buffer = gps_odom_subscriber.getBuffer(true);
-    for (const auto &pose : gps_odom_buffer) {
+    for (const auto &msg : gps_odom_buffer) {
+
+      TimedPose pose;
+      CDatapretreat::gps_odom_convert(msg, pose);
       mapping.processPose(pose);
     }
 
     if(ipm_seg_image_subscriber.isBufferEmpty() == false)
     {
       sensor_msgs::CompressedImage ipm_image = ipm_seg_image_subscriber.getBufferFront();
-      cv::Mat cv_image = cv::imdecode(cv::Mat(ipm_image.data), cv::IMREAD_COLOR);
+
+      cv::Mat cv_image;
+      CDatapretreat::ipm_seg_convert(ipm_image, cv_image);
 
       mapping.processImage(ipm_image.header.stamp.toSec(), cv_image);
     }
