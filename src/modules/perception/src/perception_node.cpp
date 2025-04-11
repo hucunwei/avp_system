@@ -15,7 +15,7 @@
 #include <sensor_msgs/Image.h>
 
 
-bool save_ipm = true;
+bool save_ipm = false;
 std::string seg = "";
 
 int main(int argc, char **argv) {
