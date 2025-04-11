@@ -54,6 +54,9 @@ class BiSeNetV2Segmenter:
             config_file = rospy.get_param('~config_file', os.path.join(pkg_path, 'config', 'bisenetv1_SUPS.py'))
             weight_path = rospy.get_param('~weight_path', os.path.join(pkg_path, 'models', 'model_final.pth'))
 
+            rospy.loginfo(f"config: {config_file}")
+            rospy.loginfo(f"config: {weight_path}")
+
             if not os.path.exists(weight_path):
                 raise FileNotFoundError(f"Model weights not found at {weight_path}")
 
@@ -101,7 +104,7 @@ class BiSeNetV2Segmenter:
         self.seg_pub = rospy.Publisher(
             rospy.get_param('~output_topic', '/ipm_seg'),
             Image,
-            queue_size=1
+            queue_size=1,
         )
 
     def image_callback(self, msg):
@@ -109,6 +112,9 @@ class BiSeNetV2Segmenter:
         try:
             # Convert ROS Image to OpenCV (BGR)
             cv_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
+            rospy.logerr("show input image")
+
+            cv2.imshow("seg img", cv_image)
 
             # Convert to RGB and preprocess
             im = cv_image[:, :, ::-1]  # BGR to RGB
@@ -134,6 +140,7 @@ class BiSeNetV2Segmenter:
             # Publish result
             seg_msg = self.bridge.cv2_to_imgmsg(pred_bgr, "bgr8")
             seg_msg.header = msg.header  # Maintain original header
+            cv2.imshow("seg img", pred_bgr)
             self.seg_pub.publish(seg_msg)
 
         except Exception as e:
