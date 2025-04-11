@@ -23,7 +23,6 @@ CPerception::CPerception(ros::NodeHandle& nh, bool is_label, bool save_ipm)
 	ipm_.AddCamera(CONFIG_DIR "2_intrinsic.yaml", CONFIG_DIR "2_extrinsic.yaml");
 	ipm_.AddCamera(CONFIG_DIR "3_intrinsic.yaml", CONFIG_DIR "3_extrinsic.yaml");
     ipm_.CreateIPMToImageMap();
-//    cv::namedWindow("perception", cv::WINDOW_NORMAL);
 
     if(save_ipm){
     	ofs_train_csv_.open(IPM_TRAIN_DIR "train.csv");
@@ -51,6 +50,7 @@ void CPerception::GetIPMImage(const sensor_msgs::CompressedImageConstPtr& image0
     raw_images[3] = cv::imdecode(image3->data, cv::IMREAD_COLOR);
     auto ipm_img = ipm_.GenerateIPMImage(raw_images);
     cv::imshow("perception", ipm_img);
+    cv::waitKey(1);
 
     if(save_ipm_){
     	ros::Time timestamp = image0->header.stamp;
@@ -69,20 +69,16 @@ void CPerception::GetIPMImage(const sensor_msgs::CompressedImageConstPtr& image0
        ROS_ERROR("Generated IPM image is empty!");
        return;
     }
-    ROS_INFO_STREAM("Publishing image with size: " << ipm_img.cols << "x" << ipm_img.rows);
-    ROS_INFO_STREAM("Number of subscribers: " << image_pub_.getNumSubscribers());
+//    ROS_INFO_STREAM("Publishing image with size: " << ipm_img.cols << "x" << ipm_img.rows);
+//    ROS_INFO_STREAM("Number of subscribers: " << image_pub_.getNumSubscribers());
     try {
       // Publish result
       std_msgs::Header header;
-      header.stamp = ros::Time::now(); // image0->header.stamp;  // Set timestamp
+      header.stamp = image0->header.stamp;  // Set timestamp
       header.frame_id = "ipm_frame";    // Optional, for TF or visualization in RViz
-//		cv::imshow("Debug IPM", ipm_img);
-//		cv::waitKey(1);
       sensor_msgs::ImagePtr msg = cv_bridge::CvImage(header, "bgr8", ipm_img).toImageMsg(); //mono8
       image_pub_.publish(msg);
     } catch (const std::exception& e) {
       ROS_ERROR("perception failed: %s", e.what());
     }
-    cv::waitKey(1);
-
 }
