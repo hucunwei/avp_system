@@ -3,6 +3,7 @@ import os
 import sys
 import rospy
 import torch
+import math
 import torch.nn.functional as F
 import numpy as np
 import cv2
@@ -112,10 +113,6 @@ class BiSeNetV2Segmenter:
         try:
             # Convert ROS Image to OpenCV (BGR)
             cv_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
-            rospy.logerr("show input image")
-
-            cv2.imshow("seg img", cv_image)
-
             # Convert to RGB and preprocess
             im = cv_image[:, :, ::-1]  # BGR to RGB
             im = self.to_tensor(dict(im=im, lb=None))['im'].unsqueeze(0).to(self.device)
@@ -137,10 +134,8 @@ class BiSeNetV2Segmenter:
             pred = self.palette[out]
             pred_bgr = cv2.cvtColor(pred, cv2.COLOR_RGB2BGR)
 
-            # Publish result
             seg_msg = self.bridge.cv2_to_imgmsg(pred_bgr, "bgr8")
             seg_msg.header = msg.header  # Maintain original header
-            cv2.imshow("seg img", pred_bgr)
             self.seg_pub.publish(seg_msg)
 
         except Exception as e:

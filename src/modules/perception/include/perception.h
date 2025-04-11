@@ -13,10 +13,6 @@ public:
     CPerception(ros::NodeHandle& nh, bool is_label=false, bool save_ipm=false);
     ~CPerception();
 
-    void AddImu(const sensor_msgs::ImuConstPtr& imu);
-
-    void AddGps(const nav_msgs::OdometryConstPtr& gps);
-
     void GetIPMImage(const sensor_msgs::CompressedImageConstPtr& image0,
                   const sensor_msgs::CompressedImageConstPtr& image1,
                   const sensor_msgs::CompressedImageConstPtr& image2,
