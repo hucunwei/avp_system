@@ -28,7 +28,7 @@ class BiSeNetV2Segmenter:
 
         # Initialize attributes
         self.cfg = None
-        self.palette = None
+        self.palette = None  # Will be replaced with exact RGB mapping
         self.net = None
         self.to_tensor = None
         self.device = None
@@ -63,7 +63,21 @@ class BiSeNetV2Segmenter:
 
             # Load model config and weights
             self.cfg = set_cfg_from_file(config_file)
-            self.palette = np.random.randint(0, 256, (256, 3), dtype=np.uint8)
+
+            # In setup_model(), replace the palette with:
+            self.palette = np.array([
+                [0.01, 0.01, 0.01],       # Gray 0
+                [123.00, 63.99, 132.00],   # Gray 1
+                [33.99, 133.99, 136.00],   # Gray 2
+                [76.95, 128.02, 254.96],   # Gray 3
+                [112.90, 192.99, 45.91],   # Gray 4
+                [192.02, 191.99, 0.02],    # Gray 5
+                [254.96, 254.97, 0.02],    # Gray 6
+                [254.93, 254.94, 254.87]   # Gray 7
+            ], dtype=np.float32)
+
+            # Clip and convert to uint8 (0-255)
+            self.palette = np.clip(self.palette, 0, 255).astype(np.uint8)
 
             self.net = model_factory[self.cfg.model_type](self.cfg.n_cats, aux_mode='eval')
 
@@ -131,9 +145,17 @@ class BiSeNetV2Segmenter:
 
             # Convert to color segmentation map
             out = out.squeeze().detach().cpu().numpy()
-            pred = self.palette[out]
-            pred_bgr = cv2.cvtColor(pred, cv2.COLOR_RGB2BGR)
 
+            # Ensure values are in 0-7 (critical for correct palette indexing)
+            out = np.clip(out, 0, 7)
+
+            # Apply exact RGB mapping
+            pred = self.palette[out]  # Uses our precise palette
+
+            # Convert RGB to BGR for OpenCV
+            pred_bgr = pred[:, :, ::-1]
+
+            # Publish
             seg_msg = self.bridge.cv2_to_imgmsg(pred_bgr, "bgr8")
             seg_msg.header = msg.header  # Maintain original header
             self.seg_pub.publish(seg_msg)
