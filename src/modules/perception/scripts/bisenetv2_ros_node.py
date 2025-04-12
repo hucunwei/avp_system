@@ -166,7 +166,8 @@ class BiSeNetV2Segmenter:
             # self.seg_pub.publish(seg_msg)
 
             # Convert BGR to JPEG
-            success, encoded_image = cv2.imencode('.jpg', pred_bgr)
+            success, encoded_image = cv2.imencode('.jpg', pred_bgr,
+                                                  [cv2.IMWRITE_JPEG_QUALITY, 90])
             if not success:
                 raise RuntimeError("Image compression failed")
 
