@@ -8,7 +8,7 @@ import torch.nn.functional as F
 import numpy as np
 import cv2
 from cv_bridge import CvBridge
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import Image, CompressedImage
 
 # Add both package root and lib directory
 pkg_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -116,9 +116,14 @@ class BiSeNetV2Segmenter:
         )
 
         # Publisher
+        # self.seg_pub = rospy.Publisher(
+        #     rospy.get_param('~output_topic', '/ipm_seg'),
+        #     Image,
+        #     queue_size=1,
+        # )
         self.seg_pub = rospy.Publisher(
-            rospy.get_param('~output_topic', '/ipm_seg'),
-            Image,
+            '/ipm_seg/compressed',
+            CompressedImage,
             queue_size=1,
         )
 
@@ -156,9 +161,22 @@ class BiSeNetV2Segmenter:
             pred_bgr = pred[:, :, ::-1]
 
             # Publish
-            seg_msg = self.bridge.cv2_to_imgmsg(pred_bgr, "bgr8")
-            seg_msg.header = msg.header  # Maintain original header
-            self.seg_pub.publish(seg_msg)
+            # seg_msg = self.bridge.cv2_to_imgmsg(pred_bgr, "bgr8")
+            # seg_msg.header = msg.header  # Maintain original header
+            # self.seg_pub.publish(seg_msg)
+
+            # Convert BGR to JPEG
+            success, encoded_image = cv2.imencode('.jpg', pred_bgr)
+            if not success:
+                raise RuntimeError("Image compression failed")
+
+            compressed_msg = CompressedImage()
+            compressed_msg.header = msg.header
+            compressed_msg.format = "jpeg"
+            compressed_msg.data = encoded_image.tobytes()
+            self.seg_pub.publish(compressed_msg)
+
+            rospy.logdebug(f"Published compressed image: {len(compressed_msg.data)} bytes")
 
         except Exception as e:
             rospy.logerr(f"Error processing image: {str(e)}")
