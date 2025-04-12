@@ -66,15 +66,15 @@ class BiSeNetV2Segmenter:
 
             # In setup_model(), replace the palette with:
             self.palette = np.array([
-                [0.01, 0.01, 0.01],       # Gray 0
-                [123.00, 63.99, 132.00],   # Gray 1
-                [33.99, 133.99, 136.00],   # Gray 2
-                [76.95, 128.02, 254.96],   # Gray 3
-                [112.90, 192.99, 45.91],   # Gray 4
-                [192.02, 191.99, 0.02],    # Gray 5
-                [254.96, 254.97, 0.02],    # Gray 6
-                [254.93, 254.94, 254.87]   # Gray 7
-            ], dtype=np.float32)
+                [0, 0, 0],       # Gray 0
+                [123, 64, 132],   # Gray 1
+                [34, 134, 136],   # Gray 2
+                [77, 128, 254],   # Gray 3
+                [113, 193, 46],   # Gray 4
+                [192, 192, 0],    # Gray 5
+                [254, 254, 0],    # Gray 6
+                [255, 255, 255]   # Gray 7
+            ], dtype=np.uint8)
 
             # Clip and convert to uint8 (0-255)
             self.palette = np.clip(self.palette, 0, 255).astype(np.uint8)

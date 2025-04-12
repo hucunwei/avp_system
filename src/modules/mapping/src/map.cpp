@@ -74,6 +74,8 @@ void Map::save(const std::string &filename) const {
     return;
   }
 
+  //ToDo(Hu)save the first post
+
   io::saveVector(ofs, corner_points_);
   io::saveVector(ofs, slots_);
   std::cout << "save corners: " << corner_points_.size() << std::endl;
@@ -99,6 +101,9 @@ void Map::load(const std::string &filename) {
     std::cerr << "Unable to load map file: " << filename << std::endl;
     return;
   }
+
+  //ToDo(Hu)load the first post
+
   io::loadVector(ifs, corner_points_);
   io::loadVector(ifs, slots_);
   for(const auto &corner : corner_points_){

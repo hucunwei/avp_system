@@ -164,15 +164,23 @@ cv::Mat IPM::GenerateIPMImage(const std::vector<cv::Mat>& images) const {
         }
 
         ipm_image.at<cv::Vec3b>(v, u) = images[i].at<cv::Vec3b>(uv1, uv0);
+
 //        // Get the pixel color from the camera image and set it to the IPM image
 //        // If the IPM image pixel is still black (not yet filled), directly assign the color
 //        if (ipm_image.at<cv::Vec3b>(v, u) == cv::Vec3b(0, 0, 0)) {
 //          ipm_image.at<cv::Vec3b>(v, u) = images[i].at<cv::Vec3b>(uv1, uv0);
 //        } else {
 //          // Otherwise, average the existing color with the new color
-//          ipm_image.at<cv::Vec3b>(v, u) = (ipm_image.at<cv::Vec3b>(v, u) +
-//                                           images[i].at<cv::Vec3b>(uv1, uv0)) /
-//                                          2;
+//		  const cv::Vec3b& ref_pixel = ipm_image.at<cv::Vec3b>(v, u);
+//          Eigen::Vector3f ref_color(ref_pixel[0], ref_pixel[1], ref_pixel[2]);
+//
+//		  const cv::Vec3b& new_pixel = images[i].at<cv::Vec3b>(uv1, uv0);
+//          Eigen::Vector3f new_color(new_pixel[0], new_pixel[1], new_pixel[2]);
+//
+//          Eigen::Vector3f avg_color = (ref_color + new_color) * 0.5;
+//          cv::Vec3b avg_pixel(avg_color[0], avg_color[1], avg_color[2]);
+//
+//          ipm_image.at<cv::Vec3b>(v, u) = avg_pixel;
 //        }
 
       }

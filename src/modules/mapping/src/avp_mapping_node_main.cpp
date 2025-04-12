@@ -112,7 +112,8 @@ int main(int argc, char **argv) {
   }
 
 #endif
-  // save map data
-  mapping.getMap().save(map_data_out_path + "avp_map.bin");
+  // save map data for areas A + B
+  //ToDo(Hu): need to save the first pose into this bin according to hw requirement
+  mapping.getMap().save(map_data_out_path + "avp_map_sim.bin");
   return 0;
 }

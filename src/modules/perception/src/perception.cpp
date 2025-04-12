@@ -49,8 +49,6 @@ void CPerception::GetIPMImage(const sensor_msgs::CompressedImageConstPtr& image0
     raw_images[2] = cv::imdecode(image2->data, cv::IMREAD_COLOR);
     raw_images[3] = cv::imdecode(image3->data, cv::IMREAD_COLOR);
     auto ipm_img = ipm_.GenerateIPMImage(raw_images);
-    cv::imshow("perception", ipm_img);
-    cv::waitKey(1);
 
     if(save_ipm_){
     	ros::Time timestamp = image0->header.stamp;
@@ -69,8 +67,6 @@ void CPerception::GetIPMImage(const sensor_msgs::CompressedImageConstPtr& image0
        ROS_ERROR("Generated IPM image is empty!");
        return;
     }
-//    ROS_INFO_STREAM("Publishing image with size: " << ipm_img.cols << "x" << ipm_img.rows);
-//    ROS_INFO_STREAM("Number of subscribers: " << image_pub_.getNumSubscribers());
     try {
       // Publish result
       std_msgs::Header header;
