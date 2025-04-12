@@ -5,6 +5,13 @@
     <rosparam file="$(find perception)/config/perception_config.yaml" command="load" />
   </node>
 
+    <!-- Python BiSeNetV2 Segmentation Node -->
+    <node pkg="perception" type="bisenetv2_ros_node.py" name="bisenetv2_segmenter" output="screen">
+        <param name="config_file" value="$(find perception)/config/bisenetv1_SUPS.py" />
+        <param name="weight_path" value="$(find perception)/models/model_final.pth" />
+        <param name="input_topic" value="/ipm_raw" />
+        <param name="output_topic" value="/ipm_seg" />
+    </node>
   <node name="rviz_perception" pkg="rviz" type="rviz" args="-d $(find perception)/src/ros_viewer/perception.rviz"/>
   
 </launch>

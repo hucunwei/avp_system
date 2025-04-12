@@ -21,11 +21,19 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(OpenCV REQUIRED)
+find_package(OpenCV REQUIRED)
+find_package(catkin REQUIRED COMPONENTS
+        roscpp
+        sensor_msgs
+        image_transport
+        cv_bridge
+)
 
 include_directories(
     include
     ${catkin_INCLUDE_DIRS}
-    ${OpenCV_INCLUDE_DIRS})
+    ${OpenCV_INCLUDE_DIRS}
+)
 
 # add_message_files(
 #   FILES
@@ -38,6 +46,7 @@ include_directories(
 add_definitions(-DCONFIG_DIR="${PROJECT_SOURCE_DIR}/config/")
 add_definitions(-DIPM_RAW_DIR="${PROJECT_SOURCE_DIR}/ipm_raw/")
 add_definitions(-DIPM_LABEL_DIR="${PROJECT_SOURCE_DIR}/ipm_label/")
+add_definitions(-DIPM_TRAIN_DIR="${PROJECT_SOURCE_DIR}/ipm_train/")
 
 add_library(${PROJECT_NAME}_core
   src/perception.cpp
@@ -55,5 +64,28 @@ catkin_package(
 
 target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME}_core ${catkin_LIBRARIES} ${OpenCV_LIBS})
 
+# Install the Python node
+catkin_install_python(PROGRAMS scripts/bisenetv2_ros_node.py
+        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+# Install launch files
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+)
+
 install(TARGETS ${PROJECT_NAME}_node
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+# Install all necessary directories
+install(DIRECTORY
+        scripts/
+        config/
+        models/
+        lib /
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
+
+
+
+

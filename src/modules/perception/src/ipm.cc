@@ -74,9 +74,17 @@ void MEICamera::DebugString() const {
 }
 
 IPM::IPM() {}
+
 void IPM::CreateIPMToImageMap(){
+  const auto num_camera = cameras_.size();
+  ipm_image_map_.resize(num_camera);
+  auto num_pixel = ipm_img_w_ * ipm_img_h_;
+  for(auto k = 0; k<num_camera; ++k){
+    ipm_image_map_[k].resize(num_pixel, Eigen::Vector2i(-1, -1));
+  }
   // Iterate over each pixel in the IPM image
   std::cout << ipm_img_w_ << ", " << ipm_img_h_ << ", " << cameras_.size() << std::endl;
+  //ToDo(@deliang), here can be parallized with tbb or openmp
   for (int u = 0; u < ipm_img_w_; ++u) {
     for (int v = 0; v < ipm_img_h_; ++v) {
       // Calculate the point p_v in vehicle coordinates, p_v is corresponding to the current pixel (u, v).
@@ -113,15 +121,7 @@ void IPM::CreateIPMToImageMap(){
         cv::Mat uv = cameras_[i].K_ * p_d;
         uv0 = static_cast<int>(uv.at<double>(0, 0));
         uv1 = static_cast<int>(uv.at<double>(1, 0) + 1);
-
-        // (uv0, uv1) is the projected pixel from p_v to cameras_[i]
-        // Skip this point if the projected coordinates are out of bounds of the camera image
-        if (uv0 < 0 || uv0 >= cameras_[i].width_ || uv1 < 0 ||
-            uv1 >= cameras_[i].height_) {
-          continue;
-        }
-
-        ipm_image_map_.insert(std::make_pair(PixelIndex{u, v, i}, PixelId{uv0, uv1}));
+        ipm_image_map_[i][v * ipm_img_w_ + u] = Eigen::Vector2i{uv0, uv1};
       }
     }
   }
@@ -146,27 +146,35 @@ cv::Mat IPM::GenerateIPMImage(const std::vector<cv::Mat>& images) const {
   }
   
   // Iterate over each pixel in the IPM image
+  //ToDo(@deliang), here can be parallized with tbb or openmp
   #pragma omp parallel for collapse(1)
   for (int u = 0; u < ipm_img_w_; ++u) {
     for (int v = 0; v < ipm_img_h_; ++v) {
       // Iterate over each camera
       for (int i = 0; i < cameras_.size(); ++i) {
-        const auto it = ipm_image_map_.find(PixelIndex{u, v, i});
-        if(it == ipm_image_map_.end()){
+        Eigen::Vector2i img_coord = ipm_image_map_[i][v * ipm_img_w_ + u];
+        const int& uv0 = img_coord.x();
+        const int& uv1 = img_coord.y();
+
+        // (uv0, uv1) is the projected pixel from p_v to cameras_[i]
+        // Skip this point if the projected coordinates are out of bounds of the camera image
+        if (uv0 < 0 || uv0 >= cameras_[i].width_ || uv1 < 0 ||
+          uv1 >= cameras_[i].height_) {
           continue;
         }
-        const int& uv0 = it->second.x;
-        const int& uv1 = it->second.y;
-        // Get the pixel color from the camera image and set it to the IPM image
-        // If the IPM image pixel is still black (not yet filled), directly assign the color
-        if (ipm_image.at<cv::Vec3b>(v, u) == cv::Vec3b(0, 0, 0)) {
-          ipm_image.at<cv::Vec3b>(v, u) = images[i].at<cv::Vec3b>(uv1, uv0);
-        } else {
-          // Otherwise, average the existing color with the new color
-          ipm_image.at<cv::Vec3b>(v, u) = (ipm_image.at<cv::Vec3b>(v, u) +
-                                           images[i].at<cv::Vec3b>(uv1, uv0)) /
-                                          2;
-        }
+
+        ipm_image.at<cv::Vec3b>(v, u) = images[i].at<cv::Vec3b>(uv1, uv0);
+//        // Get the pixel color from the camera image and set it to the IPM image
+//        // If the IPM image pixel is still black (not yet filled), directly assign the color
+//        if (ipm_image.at<cv::Vec3b>(v, u) == cv::Vec3b(0, 0, 0)) {
+//          ipm_image.at<cv::Vec3b>(v, u) = images[i].at<cv::Vec3b>(uv1, uv0);
+//        } else {
+//          // Otherwise, average the existing color with the new color
+//          ipm_image.at<cv::Vec3b>(v, u) = (ipm_image.at<cv::Vec3b>(v, u) +
+//                                           images[i].at<cv::Vec3b>(uv1, uv0)) /
+//                                          2;
+//        }
+
       }
     }
   }

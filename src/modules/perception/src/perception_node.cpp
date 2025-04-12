@@ -1,6 +1,5 @@
 #include "perception.h"
 
-#include "ros/ros.h"
 #include <iostream>
 #include <string>
 #include <geometry_msgs/Vector3Stamped.h>
@@ -16,17 +15,19 @@
 #include <sensor_msgs/Image.h>
 
 
-bool save_ipm = true;
+bool save_ipm = false;
 std::string seg = "";
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "perception_node");
   ros::NodeHandle nh("~");
 
-  bool is_label = true;
+
+  bool is_label = false;
   if (is_label) {
     seg = "_seg";
   }
+
   std::string front_topic("/camera/front" + seg);
   std::string back_topic("/camera/back" + seg);
   std::string left_topic("/camera/left" + seg);
@@ -40,12 +41,13 @@ int main(int argc, char **argv) {
     sensor_msgs::CompressedImage, sensor_msgs::CompressedImage> sync_pol;
   message_filters::Synchronizer<sync_pol> sync(sync_pol(10), front_sub, back_sub, left_sub, right_sub);
 
-  CPerception perception(is_label, save_ipm);
-  sync.registerCallback(boost::bind(&CPerception::AddImage, &perception, _1, _2, _3, _4));
-  ros::Subscriber imu_sub = nh.subscribe<sensor_msgs::Imu>(
-    "/imu", 100, boost::bind(&CPerception::AddImu, &perception, _1));
-  ros::Subscriber gps_sub = nh.subscribe<nav_msgs::Odometry>(
-    "/gps_odom", 100, boost::bind(&CPerception::AddGps, &perception, _1));
+  CPerception perception(nh, is_label, save_ipm);
+  sync.registerCallback(boost::bind(&CPerception::GetIPMImage, &perception, _1, _2, _3, _4));
+
+  // ros::Subscriber imu_sub = nh.subscribe<sensor_msgs::Imu>(
+  //   "/imu", 100, boost::bind(&CPerception::AddImu, &perception, _1));
+  // ros::Subscriber gps_sub = nh.subscribe<nav_msgs::Odometry>(
+  //   "/gps_odom", 100, boost::bind(&CPerception::AddGps, &perception, _1));
 
   ros::spin();
   return 0;
