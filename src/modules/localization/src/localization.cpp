@@ -153,7 +153,7 @@ void AvpLocalization::extractFeature(const cv::Mat& img_gray,
   cv::Mat seg_img = cv::Mat::zeros(img_gray.size(), img_gray.type());
   for (int i = 0; i < img_gray.rows; ++i) {
     for (int j = 0; j < img_gray.cols; ++j) {
-      if (kSlotGray <= img_gray.at<uchar>(i, j) ||
+      if (kSlotGray <= img_gray.at<uchar>(i, j) &&
           kSlotGray1 >= img_gray.at<uchar>(i, j)) {
         slot_img.at<uchar>(i, j) = 254;
       } else if (kArrowGray == img_gray.at<uchar>(i, j)) {
