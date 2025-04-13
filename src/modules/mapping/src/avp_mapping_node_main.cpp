@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
 
 #if 0
   std::string ipm_data_path;
-  nh.param("ipm_data_path", ipm_data_path, std::string("~/ipm_data/")); 
+  nh.param("ipm_data_path", ipm_data_path, std::string("~/ipm_data/"));
   std::cout << ipm_data_path << std::endl;
 
   std::string path(ipm_data_path); // default dataset path
@@ -75,7 +75,7 @@ int main(int argc, char **argv) {
 #else
 
   std::string ipm_seg_topic;
-  nh.param("ipm_seg", ipm_seg_topic, std::string("/ipm_seg")); 
+  nh.param("ipm_seg", ipm_seg_topic, std::string("/ipm_seg/compressed"));
   std::string truth_odom_topic;
   nh.param("truth_odom", truth_odom_topic, std::string("/gps_odom")); 
 

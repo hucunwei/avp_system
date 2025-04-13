@@ -19,7 +19,7 @@ void GpsOdometrySubscriber::odomCallback(const nav_msgs::OdometryConstPtr &msg) 
     // q.y() = msg->pose.pose.orientation.y;
     // q.z() = msg->pose.pose.orientation.z;
     // q.w() = msg->pose.pose.orientation.w;
-   
+
     // odom_buffer_.push_back(msg);
 
     if (odom_buffer_.size() > max_buffer_size_) {
