@@ -8,6 +8,6 @@ auto_run: true
 show_img: true
 
 topics:
-  # ipm_seg: /ipm_seg/compressed
-  ipm_seg: /ipm_raw/compressed
+  ipm_seg: /ipm_seg/compressed
+  # ipm_seg: /ipm_raw/compressed
   truth_odom: /gps_odom
