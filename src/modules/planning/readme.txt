@@ -1,2 +1,23 @@
 planning功能包
 -- 实现路径规划功能
+-- 订阅：
+    - 2D Nav Goal 目标车位点
+        - 话题： "/move_base_simple/goal"
+        - 消息类型：geometry_msgs::PoseStamped
+    - 定位信息
+        - 话题： "/localization/out_pose"
+        - 消息类型：nav_msgs::Odometry
+            - 位姿（position + orientation）作为 小车的 初始位姿
+            - 旋量（twist）无
+-- 发布：
+    - 导航路径
+        - 话题："/avp_planning_node/planned_hybridA_path"       //发布名 修改
+        - 消息类型：nav_msgs/Path
+
+-- 功能： 
+    - 从 定位信息 获得 小车 初始位置，订阅一次 话题（/localization/out_pose） 就立即取消订阅
+    - 在 rviz 文件，除了 出发点小车marker 外，增加了 目标点小车 marker.
+    - 目标点小车 自动修正 位姿（如 修正 车头方向 和 车位内的中点）               --- 待开发
+    - 考虑 多段式 导航                                                        --- 待开发
+    - 参考costmap概念，考虑 obstable 优化, 使得 车不会 靠着 obstable 导航       --- 待开发
+    - 车的参数调整(轴距，步长，最大转向角等)，配合control                        --- 待优化
