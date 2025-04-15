@@ -44,7 +44,7 @@ add_library(${PROJECT_NAME}_core
   src/slot.cpp
   src/frame.cpp
   # src/publisher/*.cpp
-  src/subscriber/chassis_data_subscriber.cpp
+  src/subscriber/chassis_imu_data_subscriber.cpp
   src/subscriber/ipm_seg_image_subscriber.cpp
   src/subscriber/gps_odom_subscriber.cpp
 

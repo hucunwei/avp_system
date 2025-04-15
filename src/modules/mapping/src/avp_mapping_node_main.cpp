@@ -75,9 +75,9 @@ int main(int argc, char **argv) {
 #else
 
   std::string ipm_seg_topic;
-  nh.param("ipm_seg", ipm_seg_topic, std::string("/ipm_seg/compressed"));
+  nh.param("topics/ipm_seg", ipm_seg_topic, std::string("/ipm_seg/compressed"));
   std::string truth_odom_topic;
-  nh.param("truth_odom", truth_odom_topic, std::string("/gps_odom")); 
+  nh.param("topics/truth_odom", truth_odom_topic, std::string("/gps_odom")); 
 
   std::cout << "ipm_seg_topic: " << ipm_seg_topic << ", truth_odom_topic: " << truth_odom_topic << std::endl;
 
@@ -106,6 +106,9 @@ int main(int argc, char **argv) {
       CDatapretreat::ipm_seg_convert(ipm_image, cv_image);
 
       mapping.processImage(ipm_image.header.stamp.toSec(), cv_image);
+      
+      std::setprecision(10);
+      std::cout << "ipm_image time: " << ipm_image.header.stamp.toSec() << std::endl;
     }
 
     rate.sleep();

@@ -1,4 +1,9 @@
 module: perception
+is_label: false #是否直接使用仿真器输出的语义分割结果
+save_ipm: false  #是否保存ipm图片
 topics:
-  camera: /image   #相机topic
+  camera_back: /camera/back   #后视相机topic
+  camera_front: /camera/front   #前视相机topic
+  camera_left: /camera/left   #左侧相机topic
+  camera_right: /camera/right   #右侧相机topic
   

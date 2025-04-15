@@ -24,14 +24,38 @@ int main(int argc, char **argv) {
 
 
   bool is_label = false;
+
+  nh.param("is_label", is_label, false);
+  nh.param("save_ipm", save_ipm, false);
+
+  // bool enable_infer_node;
+  // nh.param("enable_infer_node", enable_infer_node, true);
+
   if (is_label) {
     seg = "_seg";
   }
+  std::cout << "is_label: " << is_label << std::endl;
+  std::cout << "save_ipm: " << save_ipm << std::endl;
+  // std::cout << "enable_infer_node: " << enable_infer_node << std::endl;
 
-  std::string front_topic("/camera/front" + seg);
-  std::string back_topic("/camera/back" + seg);
-  std::string left_topic("/camera/left" + seg);
-  std::string right_topic("/camera/right" + seg);
+  std::string front_topic;
+  std::string back_topic;
+  std::string left_topic;
+  std::string right_topic;
+  nh.param("topics/camera_front", front_topic, std::string("/camera/front"));
+  nh.param("topics/camera_back", back_topic, std::string("/camera/back"));
+  nh.param("topics/camera_left", left_topic, std::string("/camera/left"));
+  nh.param("topics/camera_right", right_topic, std::string("/camera/right"));
+
+  front_topic = front_topic + seg;
+  back_topic = back_topic + seg;
+  left_topic = left_topic + seg;
+  right_topic = right_topic + seg;
+
+  std::cout << "camera_front topic: " << front_topic << ","
+            << "camera_back topic: " << back_topic << ","
+            << "camera_left topic: " << left_topic << ","
+            << "camera_right topic: " << right_topic << std::endl;
 
   message_filters::Subscriber<sensor_msgs::CompressedImage> front_sub(nh, front_topic, 100);
   message_filters::Subscriber<sensor_msgs::CompressedImage> back_sub(nh, back_topic, 100);

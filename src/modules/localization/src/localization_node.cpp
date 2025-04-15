@@ -1,6 +1,6 @@
 #include "ros/ros.h"
 
-#include "subscriber/chassis_data_subscriber.h"
+#include "subscriber/chassis_imu_data_subscriber.h"
 #include "subscriber/ipm_seg_image_subscriber.h"
 #include "subscriber/gps_odom_subscriber.h"
 
@@ -18,28 +18,27 @@ int main(int argc, char **argv) {
     std::string topic_chassis;
     std::string topic_gps_odom;
     std::string topic_out_pose;
+    std::string topic_imu;
     nh.param("topics/ipm_seg", topic_ipm_seg, std::string("/ipm_image"));
     nh.param("topics/chassis", topic_chassis, std::string("/chassis"));
     nh.param("topics/gps_odom", topic_gps_odom, std::string("/gps_odom"));
-    nh.param("topics/out_pose", topic_out_pose, std::string("/out_pose"));
+    nh.param("topics/out_pose", topic_out_pose, std::string("/localization/out_pose"));
+    nh.param("topics/imu", topic_imu, std::string("/imu"));
 
     std::string rosbag_path;
     std::string map_path;
     nh.param("data/rosbag_path", rosbag_path, std::string(""));
     nh.param("data/map_path", map_path, std::string(""));
 
-    ChassisDataSubscriber chassis_data_subscriber(nh, topic_chassis);
-
+    //订阅底盘数据， IMU数据
+    ChassisImuDataSubscriber chassis_imu_data_subscriber(nh, topic_chassis, topic_imu);
+    //订阅IPM 语义分割后的图像数据
     IPMSegImageSubscriber ipm_seg_image_subscriber(nh, topic_ipm_seg);
-
+    //订阅GNSS数据
     GpsOdometrySubscriber gps_odom_subscriber(nh, topic_gps_odom);
 
+    //发布定位结果
     CPosePublisher pose_publisher(nh, topic_out_pose);
-
-    // double x, y, yaw;
-    // nh.param("init_pos/x", x, 0.0);
-    // nh.param("init_pos/y", y, 0.0);
-    // nh.param("init_pos/yaw", yaw, 0.0);
 
     std::shared_ptr<AvpLocalization> avp_localization_(new AvpLocalization(map_path));
     
@@ -54,6 +53,7 @@ int main(int argc, char **argv) {
             bool flag = gps_odom_subscriber.getBufferFront(gps_odom_msg);
             if(flag)
             {
+                //采用第一个gnss数据来初始化位姿
                 TimedPose pose;
                 CDatapretreat::gps_odom_convert(gps_odom_msg, pose);
                 avp_localization_->initState(gps_odom_msg.header.stamp.toSec(), pose.t_.x() - 1., pose.t_.y() + 1.,
@@ -64,11 +64,11 @@ int main(int argc, char **argv) {
         }
         else
         {
-            auto chassis_data_buffer = chassis_data_subscriber.getBuffer(true);
-            for (const auto &msg : chassis_data_buffer) {
+            auto chassis_data_buffer = chassis_imu_data_subscriber.getBuffer(true);
+            for (const auto &data_elem : chassis_data_buffer) {
 
-                WheelMeasurement wheel_meas;
-                CDatapretreat::chassis_convert(msg, wheel_meas);
+                WheelMeasurement wheel_meas = data_elem;
+                //CDatapretreat::chassis_convert(msg, wheel_meas);
                 avp_localization_->processWheelMeasurement(wheel_meas);
             }
 
@@ -80,6 +80,7 @@ int main(int argc, char **argv) {
                 CDatapretreat::ipm_seg_convert(ipm_image, cv_image);
                 avp_localization_->processImage(ipm_image.header.stamp.toSec(), cv_image);
 
+                //发布定位结果
                 TimedPose pose = avp_localization_->getPose();
                 pose_publisher.pubOdom(pose);
             }

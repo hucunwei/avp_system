@@ -11,7 +11,7 @@ topics:
   chassis: /chassis
 
   #发布定位数据
-  out_pose: /out_pose
+  out_pose: /localization/out_pose
 
 data:
   rosbag_path: /home/hucunwei/study/avp/assignment/L9/data/avp_localization.bag
