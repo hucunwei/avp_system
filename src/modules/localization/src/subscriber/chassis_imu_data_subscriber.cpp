@@ -28,7 +28,7 @@ void ChassisImuDataSubscriber::addImuSpeed(const sensor_msgs::ImuConstPtr &imu,
     wheel_measurement.yaw_rate_ = imu->angular_velocity.z;
     //avp_localization_->processWheelMeasurement(wheel_measurement);
 
-    std::cout << "IMU & Speed data received, time:" << wheel_measurement.time_ << std::endl;
+    std::cout <<std::setprecision(10) << "IMU & Speed data received, time:" << wheel_measurement.time_ << std::endl;
 
     chassis_data_buffer_.push_back(wheel_measurement);
     if (chassis_data_buffer_.size() > max_buffer_size_) {

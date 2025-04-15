@@ -1,7 +1,8 @@
 module: localization
 topics:
   # ipm语义分割结果
-  ipm_seg: /ipm_seg
+  ipm_seg: /ipm_seg/compressed
+  # ipm_seg: /ipm_raw/compressed
   # imu数据
   imu: /imu
   #gps
@@ -14,8 +15,9 @@ topics:
   out_pose: /localization/out_pose
 
 data:
-  rosbag_path: /home/hucunwei/study/avp/assignment/L9/data/avp_localization.bag
-  map_path: /home/hucunwei/study/avp/assignment/L9/data/avp_map.bin
+  # rosbag_path: /home/hucunwei/study/avp/assignment/L9/data/avp_localization.bag
+  rosbag_path: /home/hucunwei/study/avp/assignment/L9/git/log/2025-04-06-13-35-21.bag
+  map_path: /home/hucunwei/study/avp/assignment/L9/git/avp_map_sim.bin
 
 #初始位置和航向（度）
 # init_pos:
