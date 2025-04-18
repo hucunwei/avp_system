@@ -42,6 +42,10 @@ bool CPosePublisher::pubOdom(const TimedPose& pose)
     odom.pose.pose.orientation.y = pose.R_.y();
     odom.pose.pose.orientation.z = pose.R_.z();
     odom.pose.pose.orientation.w = pose.R_.w();
+
+    // std::cout << std::fixed << std::setprecision(4) << odom.header.stamp << ", pub odom:" << "pose:" << pose.t_.transpose() 
+    // << ", yaw: " <<  GetYaw(pose.R_) * 180.0 / 3.1416
+    // << std::endl;
     
     // 设置速度
     // odom.child_frame_id = "base_link";

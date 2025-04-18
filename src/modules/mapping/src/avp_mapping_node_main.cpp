@@ -108,7 +108,7 @@ int main(int argc, char **argv) {
       mapping.processImage(ipm_image.header.stamp.toSec(), cv_image);
       
       std::setprecision(10);
-      std::cout << "ipm_image time: " << ipm_image.header.stamp.toSec() << std::endl;
+      // std::cout << "ipm_image time: " << ipm_image.header.stamp.toSec() << std::endl;
     }
 
     rate.sleep();
