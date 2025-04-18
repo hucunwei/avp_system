@@ -23,13 +23,13 @@ def rgb_to_class_map(rgb_image, class_centers):
 
 if __name__ == "__main__":
     # Create output directory
-    output_dir = "./datasets/SUPS/data/labels-test"
+    output_dir = "./ipm_labels"
     os.makedirs(output_dir, exist_ok=True)
 
-    png_files = glob("./datasets/SUPS/data/labels-scaled/*.png")
+    png_files = glob("./ipm_seg/*.png")
     # class_centers = np.array([15, 47, 79, 111, 143, 175, 207, 239])  # Example centers
     class_centers = np.array([0, 89, 104, 127, 152, 170, 225, 254])  # Example centers
-    png_files = png_files[:4]
+    # png_files = png_files[:4]
     for file in png_files:  # Process first 20 files
         # Load image
         input_image = cv2.imread(file)
@@ -48,4 +48,4 @@ if __name__ == "__main__":
         # Option 1: Save raw class indices (0-7)
         cv2.imwrite(output_path, class_map)  # Will be very dark
         # # Option 2: Save scaled version for visualization
-        cv2.imwrite(output_path.replace(".png", "_scaled.png"), class_map * 32)
+        # cv2.imwrite(output_path.replace(".png", "_scaled.png"), class_map * 32)
