@@ -147,7 +147,7 @@ cv::Mat IPM::GenerateIPMImage(const std::vector<cv::Mat>& images) const {
   
   // Iterate over each pixel in the IPM image
   //ToDo(@deliang), here can be parallized with tbb or openmp
-  #pragma omp parallel for collapse(1)
+  #pragma omp parallel for
   for (int u = 0; u < ipm_img_w_; ++u) {
     for (int v = 0; v < ipm_img_h_; ++v) {
       // Iterate over each camera
