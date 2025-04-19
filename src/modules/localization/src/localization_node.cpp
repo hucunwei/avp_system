@@ -56,11 +56,11 @@ int main(int argc, char **argv) {
                 //采用第一个gnss数据来初始化位姿
                 TimedPose pose;
                 CDatapretreat::gps_odom_convert(gps_odom_msg, pose);
-               //  avp_localization_->initState(gps_odom_msg.header.stamp.toSec(), pose.t_.x() - 1., pose.t_.y() + 1.,
-                //                             GetYaw(pose.R_) + 5. * kToRad);
+                 avp_localization_->initState(gps_odom_msg.header.stamp.toSec(), pose.t_.x() - 1., pose.t_.y() + 1.,
+                                             GetYaw(pose.R_) + 5. * kToRad);
 
-                avp_localization_->initState(gps_odom_msg.header.stamp.toSec(), pose.t_.x(), pose.t_.y(),
-                                            GetYaw(pose.R_) + 0 * kToRad);
+                //avp_localization_->initState(gps_odom_msg.header.stamp.toSec(), pose.t_.x(), pose.t_.y(),
+                //                            GetYaw(pose.R_) + 0 * kToRad);
                 ekf_inited_ = true;
             }
 
