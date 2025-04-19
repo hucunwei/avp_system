@@ -59,8 +59,8 @@ int main(int argc, char **argv) {
                //  avp_localization_->initState(gps_odom_msg.header.stamp.toSec(), pose.t_.x() - 1., pose.t_.y() + 1.,
                 //                             GetYaw(pose.R_) + 5. * kToRad);
 
-                avp_localization_->initState(gps_odom_msg.header.stamp.toSec(), pose.t_.x(), pose.t_.y(),
-                                            GetYaw(pose.R_) + 0 * kToRad);
+                avp_localization_->initState(gps_odom_msg.header.stamp.toSec(), pose.t_.x() - 0.5, pose.t_.y() + 0.5,
+                                            GetYaw(pose.R_) + 2.0 * kToRad);
                 ekf_inited_ = true;
             }
 
