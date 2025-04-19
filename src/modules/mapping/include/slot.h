@@ -33,8 +33,8 @@ constexpr double kPixelScaleInv = 1.0 / kPixelScale;
   // slot edge take value in [150, 153]
   const uchar kDashGray = 127;
   const uchar kArrowGray = 225;
-  const uchar kSlotGray = 145;
-  const uchar kSlotGray1 = 156;
+  const uchar kSlotGray = 150;
+  const uchar kSlotGray1 = 153;
 #endif
 
 
