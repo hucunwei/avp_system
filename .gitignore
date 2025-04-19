@@ -3,3 +3,5 @@ build
 devel
 .catkin_workspace
 .git
+src/modules/perception/ipm_raw
+src/modules/perception/ipm_label

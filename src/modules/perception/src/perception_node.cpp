@@ -1,6 +1,5 @@
 #include "perception.h"
 
-#include "ros/ros.h"
 #include <iostream>
 #include <string>
 #include <geometry_msgs/Vector3Stamped.h>
@@ -16,21 +15,47 @@
 #include <sensor_msgs/Image.h>
 
 
-bool save_ipm = true;
+bool save_ipm = false;
+std::string seg = "";
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "perception_node");
   ros::NodeHandle nh("~");
 
-  std::string front_topic("/camera/front");
-  std::string back_topic("/camera/back");
-  std::string left_topic("/camera/left");
-  std::string right_topic("/camera/right");
 
-  std::string front_topic_seg("/camera/front_seg");
-  std::string back_topic_seg("/camera/back_seg");
-  std::string left_topic_seg("/camera/left_seg");
-  std::string right_topic_seg("/camera/right_seg");
+  bool is_label = false;
+
+  nh.param("is_label", is_label, false);
+  nh.param("save_ipm", save_ipm, false);
+
+  // bool enable_infer_node;
+  // nh.param("enable_infer_node", enable_infer_node, true);
+
+  if (is_label) {
+    seg = "_seg";
+  }
+  std::cout << "is_label: " << is_label << std::endl;
+  std::cout << "save_ipm: " << save_ipm << std::endl;
+  // std::cout << "enable_infer_node: " << enable_infer_node << std::endl;
+
+  std::string front_topic;
+  std::string back_topic;
+  std::string left_topic;
+  std::string right_topic;
+  nh.param("topics/camera_front", front_topic, std::string("/camera/front"));
+  nh.param("topics/camera_back", back_topic, std::string("/camera/back"));
+  nh.param("topics/camera_left", left_topic, std::string("/camera/left"));
+  nh.param("topics/camera_right", right_topic, std::string("/camera/right"));
+
+  front_topic = front_topic + seg;
+  back_topic = back_topic + seg;
+  left_topic = left_topic + seg;
+  right_topic = right_topic + seg;
+
+  std::cout << "camera_front topic: " << front_topic << ","
+            << "camera_back topic: " << back_topic << ","
+            << "camera_left topic: " << left_topic << ","
+            << "camera_right topic: " << right_topic << std::endl;
 
   message_filters::Subscriber<sensor_msgs::CompressedImage> front_sub(nh, front_topic, 100);
   message_filters::Subscriber<sensor_msgs::CompressedImage> back_sub(nh, back_topic, 100);
@@ -48,12 +73,13 @@ int main(int argc, char **argv) {
   sensor_msgs::CompressedImage, sensor_msgs::CompressedImage> sync_pol;
   message_filters::Synchronizer<sync_pol> sync(sync_pol(10), front_sub, back_sub, left_sub, right_sub, front_sub_seg, back_sub_seg, left_sub_seg, right_sub_seg);
 
-  CPerception perception(save_ipm);
-  sync.registerCallback(boost::bind(&CPerception::AddImage, &perception, _1, _2, _3, _4, _5, _6, _7, _8));
-  ros::Subscriber imu_sub = nh.subscribe<sensor_msgs::Imu>(
-    "/imu", 100, boost::bind(&CPerception::AddImu, &perception, _1));
-  ros::Subscriber gps_sub = nh.subscribe<nav_msgs::Odometry>(
-    "/gps_odom", 100, boost::bind(&CPerception::AddGps, &perception, _1));
+  CPerception perception(nh, is_label, save_ipm);
+  sync.registerCallback(boost::bind(&CPerception::GetIPMImage, &perception, _1, _2, _3, _4));
+
+  // ros::Subscriber imu_sub = nh.subscribe<sensor_msgs::Imu>(
+  //   "/imu", 100, boost::bind(&CPerception::AddImu, &perception, _1));
+  // ros::Subscriber gps_sub = nh.subscribe<nav_msgs::Odometry>(
+  //   "/gps_odom", 100, boost::bind(&CPerception::AddGps, &perception, _1));
 
   ros::spin();
   return 0;

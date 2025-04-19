@@ -84,7 +84,7 @@ void IPM::CreateIPMToImageMap(){
   }
   // Iterate over each pixel in the IPM image
   std::cout << ipm_img_w_ << ", " << ipm_img_h_ << ", " << cameras_.size() << std::endl;
-  //ToDo(@deliang), here can be parallized with tbb or openmp
+  #pragma omp parallel for
   for (int u = 0; u < ipm_img_w_; ++u) {
     for (int v = 0; v < ipm_img_h_; ++v) {
       // Calculate the point p_v in vehicle coordinates, p_v is corresponding to the current pixel (u, v).
@@ -146,8 +146,7 @@ cv::Mat IPM::GenerateIPMImage(const std::vector<cv::Mat>& images) const {
   }
   
   // Iterate over each pixel in the IPM image
-  //ToDo(@deliang), here can be parallized with tbb or openmp
-  #pragma omp parallel for collapse(1)
+  #pragma omp parallel for
   for (int u = 0; u < ipm_img_w_; ++u) {
     for (int v = 0; v < ipm_img_h_; ++v) {
       // Iterate over each camera
@@ -164,6 +163,7 @@ cv::Mat IPM::GenerateIPMImage(const std::vector<cv::Mat>& images) const {
         }
 
         ipm_image.at<cv::Vec3b>(v, u) = images[i].at<cv::Vec3b>(uv1, uv0);
+
 //        // Get the pixel color from the camera image and set it to the IPM image
 //        // If the IPM image pixel is still black (not yet filled), directly assign the color
 //        if (ipm_image.at<cv::Vec3b>(v, u) == cv::Vec3b(0, 0, 0)) {

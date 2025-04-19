@@ -1,1 +1,27 @@
 module: localization
+topics:
+  # ipm语义分割结果
+  ipm_seg: /ipm_seg/compressed
+  # ipm_seg: /ipm_raw/compressed
+  # imu数据
+  imu: /imu
+  #gps
+  gps_odom: /gps_odom
+
+  #底盘:
+  chassis: /chassis
+
+  #发布定位数据
+  out_pose: /localization/out_pose
+
+data:
+  # rosbag_path: /home/hucunwei/study/avp/assignment/L9/data/avp_localization.bag
+  rosbag_path: /home/hucunwei/study/avp/assignment/L9/git/log/2025-04-06-13-35-21.bag
+  map_path: /home/hucunwei/study/avp/assignment/L9/git/avp_map_sim.bin
+
+#初始位置和航向（度）
+# init_pos:
+#   x: 0.0
+#   y: 0.0
+#   yaw: 10.0
+  

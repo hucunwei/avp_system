@@ -4,10 +4,10 @@
     
     <!-- 启动模块 -->
     <include file="$(find perception)/launch/perception.launch" />
-    <include file="$(find mapping)/launch/mapping.launch" />
+    <!-- <include file="$(find avp_mapping)/launch/avp_mapping.launch" /> -->
     <include file="$(find localization)/launch/localization.launch" />
-    <include file="$(find planning)/launch/planning.launch" />
-    <include file="$(find controller)/launch/controller.launch" />
+<!--     <include file="$(find planning)/launch/planning.launch" /> -->
+<!--     <include file="$(find controller)/launch/controller.launch" /> -->
     
     <!-- 启动可视化 -->
     <!-- <node name="rviz" pkg="rviz" type="rviz" 

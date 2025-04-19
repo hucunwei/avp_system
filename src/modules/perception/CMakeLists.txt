@@ -21,12 +21,6 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(OpenCV REQUIRED)
-find_package(PythonLibs 3.8 REQUIRED)
-
-#find_package(Python3 REQUIRED COMPONENTS Development NumPy)
-## Set Python source directory
-#set(PYTHON_SOURCE_DIR "${CMAKE_SOURCE_DIR}/python")
-find_package(PythonLibs 3.6 REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
         roscpp
@@ -35,27 +29,10 @@ find_package(catkin REQUIRED COMPONENTS
         cv_bridge
 )
 
-# Locate NumPy headers
-execute_process(
-        COMMAND python3 -c "import numpy; print(numpy.get_include())"
-        OUTPUT_VARIABLE NUMPY_INCLUDE_DIRS
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
-#include_directories(
-#        include
-#        ${catkin_INCLUDE_DIRS}
-#        ${Python_INCLUDE_DIRS}
-#        ${NUMPY_INCLUDE_DIRS}
-#        ${OpenCV_INCLUDE_DIRS}
-#)
-
 include_directories(
     include
     ${catkin_INCLUDE_DIRS}
     ${OpenCV_INCLUDE_DIRS}
-    ${Python_INCLUDE_DIRS}
-    ${NumPy_INCLUDE_DIRS}
 )
 
 # add_message_files(
@@ -87,5 +64,28 @@ catkin_package(
 
 target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME}_core ${catkin_LIBRARIES} ${OpenCV_LIBS} ${Python_LIBRARIES})
 
+# Install the Python node
+catkin_install_python(PROGRAMS scripts/bisenetv2_ros_node.py
+        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+# Install launch files
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+)
+
 install(TARGETS ${PROJECT_NAME}_node
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+# Install all necessary directories
+install(DIRECTORY
+        scripts/
+        config/
+        models/
+        lib /
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
+
+
+
+

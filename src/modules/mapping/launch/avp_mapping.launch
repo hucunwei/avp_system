@@ -1,0 +1,7 @@
+<launch>
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find avp_mapping)/launch/avp_mapping.rviz" />
+
+    <node name="avp_mapping" pkg="avp_mapping" type="avp_mapping_node" output="screen">
+        <rosparam file="$(find avp_mapping)/config/mapping_config.yaml" command="load" />
+    </node>
+</launch>
