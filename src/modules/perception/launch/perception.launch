@@ -18,6 +18,6 @@
         <param name="output_topic" value="/ipm_seg" />
     </node>
     </group>
-  <node name="rviz_perception" pkg="rviz" type="rviz" args="-d $(find perception)/src/ros_viewer/perception.rviz"/>
+  <!-- <node name="rviz_perception" pkg="rviz" type="rviz" args="-d $(find perception)/src/ros_viewer/perception.rviz"/> -->
   
 </launch>

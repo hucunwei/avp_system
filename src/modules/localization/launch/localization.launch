@@ -5,6 +5,6 @@
     <rosparam file="$(find localization)/config/localization_config.yaml" command="load" />
   </node>
 
-  <node name="rviz_localization" pkg="rviz" type="rviz" args="-d $(find localization)/src/ros_viewer/localization.rviz"/>
+  <!-- <node name="rviz_localization" pkg="rviz" type="rviz" args="-d $(find localizasstion)/src/ros_viewer/localization.rviz"/> -->
   
 </launch>

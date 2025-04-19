@@ -238,9 +238,9 @@ Eigen::Affine3d AvpLocalization::imageRegistration() {
 
     /////  TODO:  finding correspondences by kd-tree nearest neighbor search ////
     correspondences.resize(total_num, 0);
-	for(auto i = 0; i < total_num; i++) {
-       std::vector<int> pt_idx_knn_search(1);
-       std::vector<float> pt_knn_sq_dist(1);
+    for(auto i = 0; i < total_num; i++) {
+        std::vector<int> pt_idx_knn_search(1);
+        std::vector<float> pt_knn_sq_dist(1);
 
        // Perform the nearest neighbor search
        if(i < slot_num && kdtree_slot_.nearestKSearch(cloud_est.points[i], 1, pt_idx_knn_search, pt_knn_sq_dist) > 0){
@@ -253,7 +253,7 @@ Eigen::Affine3d AvpLocalization::imageRegistration() {
        	  cloud_in[i] = arrow_line_cloud_in_->points[pt_idx_knn_search[0]];
           correspondences[i] = 1;
 	   }
-	}
+    }
 
     /////////////////////////////////////////////////////////////////////////////////////
 
@@ -297,7 +297,7 @@ Eigen::Affine3d AvpLocalization::imageRegistration() {
     Eigen::MatrixXf U = svd.matrixU();
     // Get the right singular vectors (V)
     Eigen::MatrixXf V = svd.matrixV();
-	Eigen::Matrix3f orientation_flip{Eigen::Matrix3f::Identity()};
+	  Eigen::Matrix3f orientation_flip{Eigen::Matrix3f::Identity()};
     orientation_flip(2,2) = (V * U.transpose()).determinant();
     Eigen::Matrix3f cur_R = V * orientation_flip * U.transpose();
     Eigen::Vector3f cur_t = u_point_in - cur_R * u_point_est;
