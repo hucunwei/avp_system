@@ -4,7 +4,7 @@
     
     <!-- 启动模块 -->
     <include file="$(find perception)/launch/perception.launch" />
-    <include file="$(find localization)/launch/avp_mapping.launch" />
+    <include file="$(find avp_mapping)/launch/avp_mapping.launch" />
     
     <!-- 启动可视化 -->
     <!-- <node name="rviz" pkg="rviz" type="rviz" 
