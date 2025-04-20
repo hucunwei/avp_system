@@ -242,17 +242,17 @@ Eigen::Affine3d AvpLocalization::imageRegistration() {
         std::vector<int> pt_idx_knn_search(1);
         std::vector<float> pt_knn_sq_dist(1);
 
-        // Perform the nearest neighbor search
-        if(i < slot_num && kdtree_slot_.nearestKSearch(cloud_est.points[i], 1, pt_idx_knn_search, pt_knn_sq_dist) > 0 /* && pt_knn_sq_dist[0] < 5.0*/){
-            cloud_in[i] = slot_cloud_in_->points[pt_idx_knn_search[0]];
-            correspondences[i] = 1;
-      }else if (i < dash_num && kdtree_dash_line_.nearestKSearch(cloud_est.points[i], 1, pt_idx_knn_search, pt_knn_sq_dist) > 0 /* &&  && pt_knn_sq_dist[0] < 5.0*/){
-              cloud_in[i] = dash_line_cloud_in_->points[pt_idx_knn_search[0]];
-            correspondences[i] = 1;
-      }else if (kdtree_arrow_line_.nearestKSearch(cloud_est.points[i], 1, pt_idx_knn_search, pt_knn_sq_dist) > 0 /* && pt_knn_sq_dist[0] < 5.0*/){
-            cloud_in[i] = arrow_line_cloud_in_->points[pt_idx_knn_search[0]];
-            correspondences[i] = 1;
-      }
+       // Perform the nearest neighbor search
+       if(i < slot_num && kdtree_slot_.nearestKSearch(cloud_est.points[i], 1, pt_idx_knn_search, pt_knn_sq_dist) > 0){
+	       	cloud_in[i] = slot_cloud_in_->points[pt_idx_knn_search[0]];
+         	correspondences[i] = 1;
+	   }else if (i < dash_num && kdtree_dash_line_.nearestKSearch(cloud_est.points[i], 1, pt_idx_knn_search, pt_knn_sq_dist) > 0){
+       	  	cloud_in[i] = dash_line_cloud_in_->points[pt_idx_knn_search[0]];
+         	correspondences[i] = 1;
+	   }else if (kdtree_arrow_line_.nearestKSearch(cloud_est.points[i], 1, pt_idx_knn_search, pt_knn_sq_dist) > 0){
+       	  cloud_in[i] = arrow_line_cloud_in_->points[pt_idx_knn_search[0]];
+          correspondences[i] = 1;
+	   }
     }
 
     /////////////////////////////////////////////////////////////////////////////////////
