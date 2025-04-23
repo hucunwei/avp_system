@@ -62,7 +62,7 @@ catkin_package(
   CATKIN_DEPENDS common_msgs
 )
 
-target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME}_core ${catkin_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME}_core ${catkin_LIBRARIES} ${OpenCV_LIBS} ${Python_LIBRARIES})
 
 # Install the Python node
 catkin_install_python(PROGRAMS scripts/bisenetv2_ros_node.py

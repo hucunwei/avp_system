@@ -33,6 +33,7 @@ CPerception::CPerception(ros::NodeHandle& nh, bool is_label, bool save_ipm)
     	}
     }
 }
+
 CPerception::~CPerception(){
 	if(save_ipm_){
        ofs_train_csv_.close();
@@ -42,7 +43,11 @@ CPerception::~CPerception(){
 void CPerception::GetIPMImage(const sensor_msgs::CompressedImageConstPtr& image0,
               const sensor_msgs::CompressedImageConstPtr& image1,
               const sensor_msgs::CompressedImageConstPtr& image2,
-              const sensor_msgs::CompressedImageConstPtr& image3){
+              const sensor_msgs::CompressedImageConstPtr& image3,
+              const sensor_msgs::CompressedImageConstPtr& image4,
+ const sensor_msgs::CompressedImageConstPtr& image5,
+ const sensor_msgs::CompressedImageConstPtr& image6,
+ const sensor_msgs::CompressedImageConstPtr& image7){
 	std::vector<cv::Mat> raw_images(4);
     raw_images[0] = cv::imdecode(image0->data, cv::IMREAD_COLOR);
     raw_images[1] = cv::imdecode(image1->data, cv::IMREAD_COLOR);
@@ -50,17 +55,19 @@ void CPerception::GetIPMImage(const sensor_msgs::CompressedImageConstPtr& image0
     raw_images[3] = cv::imdecode(image3->data, cv::IMREAD_COLOR);
     auto ipm_img = ipm_.GenerateIPMImage(raw_images);
 
+	std::vector<cv::Mat> label_images(4);
+	label_images[0] = cv::imdecode(image4->data, cv::IMREAD_COLOR);
+	label_images[1] = cv::imdecode(image5->data, cv::IMREAD_COLOR);
+	label_images[2] = cv::imdecode(image6->data, cv::IMREAD_COLOR);
+	label_images[3] = cv::imdecode(image7->data, cv::IMREAD_COLOR);
+	auto ipm_label = ipm_.GenerateIPMImage(label_images);
+
     if(save_ipm_){
     	ros::Time timestamp = image0->header.stamp;
     	ROS_INFO("Timestamp: sec=%d, nsec=%d", timestamp.sec, timestamp.nsec);
     	std::string file_name = std::to_string(timestamp.sec) + "." + std::to_string(timestamp.nsec) + ".png";
-      if(is_label_){
-        std::cout << "saving to label path: " << IPM_LABEL_DIR << std::endl;
-        cv::imwrite(IPM_LABEL_DIR + file_name, ipm_img);
-      }else{
-        std::cout << "saving to raw path: " << IPM_RAW_DIR << std::endl;
+        cv::imwrite(IPM_LABEL_DIR + file_name, ipm_label);
         cv::imwrite(IPM_RAW_DIR + file_name, ipm_img);
-      }
       ofs_train_csv_ << "./data/images/" + file_name << ",./data/labels/" + file_name << std::endl;
     }
     if(ipm_img.empty()) {

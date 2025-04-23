@@ -61,9 +61,17 @@ int main(int argc, char **argv) {
   message_filters::Subscriber<sensor_msgs::CompressedImage> back_sub(nh, back_topic, 100);
   message_filters::Subscriber<sensor_msgs::CompressedImage> left_sub(nh, left_topic, 100);
   message_filters::Subscriber<sensor_msgs::CompressedImage> right_sub(nh, right_topic, 100);
+
+  message_filters::Subscriber<sensor_msgs::CompressedImage> front_sub_seg(nh, front_topic_seg, 100);
+  message_filters::Subscriber<sensor_msgs::CompressedImage> back_sub_seg(nh, back_topic_seg, 100);
+  message_filters::Subscriber<sensor_msgs::CompressedImage> left_sub_seg(nh, left_topic_seg, 100);
+  message_filters::Subscriber<sensor_msgs::CompressedImage> right_sub_seg(nh, right_topic_seg, 100);
+
+
   typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::CompressedImage, sensor_msgs::CompressedImage,
-    sensor_msgs::CompressedImage, sensor_msgs::CompressedImage> sync_pol;
-  message_filters::Synchronizer<sync_pol> sync(sync_pol(10), front_sub, back_sub, left_sub, right_sub);
+  sensor_msgs::CompressedImage, sensor_msgs::CompressedImage, sensor_msgs::CompressedImage, sensor_msgs::CompressedImage,
+  sensor_msgs::CompressedImage, sensor_msgs::CompressedImage> sync_pol;
+  message_filters::Synchronizer<sync_pol> sync(sync_pol(10), front_sub, back_sub, left_sub, right_sub, front_sub_seg, back_sub_seg, left_sub_seg, right_sub_seg);
 
   CPerception perception(nh, is_label, save_ipm);
   sync.registerCallback(boost::bind(&CPerception::GetIPMImage, &perception, _1, _2, _3, _4));
