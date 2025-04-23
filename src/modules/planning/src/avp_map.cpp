@@ -1,13 +1,26 @@
 #include "avp_map.h"
 
+
 std::vector<Slot> AvpMap::getAllSlots() const {
   std::vector<Slot> all_slots(slots_.size());
   for (int i = 0; i < slots_.size(); ++i) {
+    Eigen::Vector3d slot_center(0.0, 0.0, 0.0);                           // 计算车位的中心点
     for (int j = 0; j < 4; ++j) {
-      all_slots[i].corners_[j] = corner_points_[slots_[i][j]].center();
+      all_slots[i].corners_[j] = corner_points_[slots_[i][j]].center();   // 存储车位的 角点
+      slot_center += all_slots[i].corners_[j];
     }
+    all_slots[i].slot_center = slot_center /= 4.0;                        // 存储 车位的中心点
+    all_slots[i].slot_center.z() = 0;                                     // 修正 z 为 0
+    Eigen::Vector3d slot_direction = all_slots[i].corners_[1] - all_slots[i].corners_[2];  // 计算 车位的方向向量
+    all_slots[i].yaw = atan2(slot_direction.y(), slot_direction.x()) ;
+    all_slots[i].updateBoundingBox2();                                     // 计算 车位的 bounding box, 方便后续 2d Nav Goal 判断是哪个车位
   }
   return std::move(all_slots);
+}
+
+
+void AvpMap::updatePureSlots() {
+  pure_slots_ = this->getAllSlots();  // 使用 this 指针明确作用域
 }
 
 const std::unordered_set<Eigen::Vector3i, Vector3iHash> &
@@ -120,19 +133,23 @@ void AvpMap::load(const std::string &filename) {
   }
   ifs.close();
   if (semantic_grid_map_[kSlot].empty()) {
-    discretizeLine(getAllSlots());
+    updatePureSlots(); // udpate pure_slots
+    discretizeLine(pure_slots_);
+    // discretizeLine(getAllSlots());
+
   }
 
   std::cout << "avp map loaded from " << filename << std::endl;
 }
 
 void interpolatePoints(std::vector<Eigen::Vector3d> &points) {
-  if (points.size() < 2) points = {};
+  if (points.size() < 2)
+    points = {};
 
   std::vector<Eigen::Vector3d> result;
   for (size_t i = 0; i < points.size(); ++i) {
-      if(i == 0)
-          continue;
+    if (i == 0)
+      continue;
     const Eigen::Vector3d &p1 = points[i];
     const Eigen::Vector3d &p2 = points[(i + 1) % 4];
 
@@ -153,6 +170,8 @@ void interpolatePoints(std::vector<Eigen::Vector3d> &points) {
 }
 
 void AvpMap::discretizeLine(const std::vector<Slot> &slots) {
+// void AvpMap::discretizeLine(std::vector<Slot> &slots) {
+  // pure_slots_ = slots;
   for (const auto &slot : slots) {
     std::vector<Eigen::Vector3d> single_slot;
     for (int j = 0; j < 4; ++j) {

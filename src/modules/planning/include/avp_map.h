@@ -14,6 +14,7 @@ class AvpMap {
   explicit AvpMap() : semantic_grid_map_(SemanticLabel::kTotalLabelNum) {}
 
   Eigen::AlignedBox3d getBoundingBox() const { return bounding_box_; }
+  // std::vector<Slot> getAllSlots() ;
   std::vector<Slot> getAllSlots() const;
   const std::unordered_set<Eigen::Vector3i, Vector3iHash> &getSemanticElement(
       SemanticLabel label) const;
@@ -25,16 +26,22 @@ class AvpMap {
   void load(const std::string &filename);
 
   void discretizeLine(const std::vector<Slot> &slots);
+  // void discretizeLine(std::vector<Slot> &slots);
+  void updatePureSlots();
 
+  std::vector<Slot> getPureSlots(){return pure_slots_;}
+  
  private:
   // return the index of the corner point
   size_t addSlotCorner(const Eigen::Vector3d &pt);
+  // Eigen::AlignedBox3d calculateBoundingBox(const Slot &new_slot);
 
   std::vector<CornerPoint> corner_points_;  // slot corners
   std::vector<SlotIndex> slots_;  // index of slot points, 4 points for a slot
   std::vector<std::unordered_set<Eigen::Vector3i, Vector3iHash>>
       semantic_grid_map_;             // grid of semantic elements
   Eigen::AlignedBox3d bounding_box_;  // bounding box of slot corners
+  std::vector<Slot> pure_slots_;        // pure_slots
 };
 
 template <typename T>

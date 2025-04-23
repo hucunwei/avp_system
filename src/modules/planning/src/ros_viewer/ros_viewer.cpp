@@ -24,6 +24,7 @@ RosViewer::RosViewer(ros::NodeHandle &n) : nh_(n) {
     pub_global_slot_pts_ = n.advertise<sensor_msgs::PointCloud>("global_slot_pts", 100, true);
     pub_mesh_ = n.advertise<visualization_msgs::Marker>("vehicle", 100, true);
     pub_mesh2_ = n.advertise<visualization_msgs::Marker>("vehicle2", 100, true);
+    pub_mesh_array_ = n.advertise<visualization_msgs::MarkerArray>("vehicle_array", 100, true); // , 100, true
     pub_slot_marker_ = n.advertise<visualization_msgs::Marker>("slot_vector", 100, true);
     pub_slot_marker_ipm_ = n.advertise<visualization_msgs::Marker>("slot_vector_ipm", 100, true);
     pub_current_pts_ = n.advertise<sensor_msgs::PointCloud>("current_pts", 100, true);
@@ -148,7 +149,7 @@ void RosViewer::publishPose(const TimedPose &pose) {
     Eigen::Vector3d position = pose.t_;
     Eigen::Quaterniond q = pose.R_;
 
-    // pub odometry
+    // pub odometry (发布 位姿 pose: position + orientaion)
     nav_msgs::Odometry odometry;
     odometry.header.frame_id = "world";
     odometry.header.stamp = ros::Time(pose.time_);
@@ -160,7 +161,7 @@ void RosViewer::publishPose(const TimedPose &pose) {
     odometry.pose.pose.orientation.z = q.z();
     odometry.pose.pose.orientation.w = q.w();
     pub_odometry_.publish(odometry);
-    // pub path
+    // pub path (发布 path)
     geometry_msgs::PoseStamped pose_stamped;
     pose_stamped.header.frame_id = "world";
     pose_stamped.header.stamp = ros::Time(pose.time_);
@@ -214,7 +215,7 @@ void RosViewer::publishPose(const TimedPose &pose) {
     meshROS.color.g = 0.0;
     meshROS.color.b = 0.0;
     // std::string mesh_resource(MESH_PATH);
-    std::string mesh_resource = "package://avp_planning/meshes/car.dae";
+    std::string mesh_resource = "package://planning/meshes/car.dae";
     meshROS.mesh_resource = mesh_resource;
     ROS_INFO("Publishing Marker1 with Namespace: %s", meshROS.ns.c_str());
     pub_mesh_.publish(meshROS);
@@ -225,42 +226,6 @@ void RosViewer::publishGoalPose(const TimedPose &pose) {
     Eigen::Vector3d position = pose.t_;
     Eigen::Quaterniond q = pose.R_;
 
-    // pub odometry
-    nav_msgs::Odometry odometry;
-    odometry.header.frame_id = "world";
-    odometry.header.stamp = ros::Time(pose.time_);
-    odometry.pose.pose.position.x = position(0);
-    odometry.pose.pose.position.y = position(1);
-    odometry.pose.pose.position.z = position(2);
-    odometry.pose.pose.orientation.x = q.x();
-    odometry.pose.pose.orientation.y = q.y();
-    odometry.pose.pose.orientation.z = q.z();
-    odometry.pose.pose.orientation.w = q.w();
-    pub_odometry_.publish(odometry);
-    // pub path
-    geometry_msgs::PoseStamped pose_stamped;
-    pose_stamped.header.frame_id = "world";
-    pose_stamped.header.stamp = ros::Time(pose.time_);
-    pose_stamped.pose = odometry.pose.pose;
-    path_.poses.push_back(pose_stamped);
-    if (path_.poses.size() > 10000) {
-        path_.poses.erase(path_.poses.begin());
-    }
-    pub_path_.publish(path_);
-    // pub tf
-    static tf::TransformBroadcaster br;
-    tf::Transform transform;
-    tf::Quaternion tf_q;
-    transform.setOrigin(tf::Vector3(position(0),
-                                    position(1),
-                                    position(2)));
-    tf_q.setW(q.w());
-    tf_q.setX(q.x());
-    tf_q.setY(q.y());
-    tf_q.setZ(q.z());
-    transform.setRotation(tf_q);
-    br.sendTransform(tf::StampedTransform(transform, ros::Time(pose.time_),
-                                          "world", "vehicle2"));
     // pub Mesh model
     visualization_msgs::Marker meshROS;
     meshROS.header.frame_id = std::string("world");
@@ -288,13 +253,68 @@ void RosViewer::publishGoalPose(const TimedPose &pose) {
     meshROS.scale.z = 1.0;
     meshROS.color.a = 1.0;
     meshROS.color.r = 0.0;
-    meshROS.color.g = 0.0;
-    meshROS.color.b = 1.0;
+    meshROS.color.g = 1.0;
+    meshROS.color.b = 0.0;
     // std::string mesh_resource(MESH_PATH);
-    std::string mesh_resource = "package://avp_planning/meshes/car.dae";
+    std::string mesh_resource = "package://planning/meshes/car.dae"; // package://avp_planning/meshes/car.dae
     meshROS.mesh_resource = mesh_resource;
     ROS_INFO("Publishing Marker2 with Namespace: %s", meshROS.ns.c_str());
     pub_mesh2_.publish(meshROS);
+}
+
+void RosViewer::publishArrayPoses(const std::vector<TimedPose> &poses) {
+    // 创建一个 MarkerArray 容器
+    visualization_msgs::MarkerArray marker_array;
+
+    for(size_t i=0; i < poses.size(); ++i){
+        ROS_INFO("Marker Array %d:", i);
+        Eigen::Vector3d position = poses[i].t_;
+        Eigen::Quaterniond q = poses[i].R_;
+        ROS_INFO("- Position: x=%.2f, y=%.2f, z=%.2f", poses[i].t_.x(), poses[i].t_.y(), poses[i].t_.z());
+        ROS_INFO("- Orientation (Quaternion): w=%.2f, x=%.2f, y=%.2f, z=%.2f", poses[i].R_.w(), poses[i].R_.x(), poses[i].R_.y(), poses[i].R_.z());
+
+        // 创建一个 Marker 对象
+        visualization_msgs::Marker meshROS;
+        meshROS.header.frame_id = std::string("world");
+        meshROS.header.stamp = ros::Time(poses[i].time_);
+        std::string vehicle_name = "vehicle_a" + std::to_string(i);
+        meshROS.ns = vehicle_name;
+        int vehicle_id = 10 + static_cast<int>(i);
+        meshROS.id = vehicle_id; // Unique ID for the second marker
+        meshROS.type = visualization_msgs::Marker::MESH_RESOURCE;
+        meshROS.action = visualization_msgs::Marker::ADD;
+        Eigen::Matrix3d frontleftup2rightfrontup;
+        frontleftup2rightfrontup << 0, 1, 0, -1, 0, 0, 0, 0, 1;
+        Eigen::Matrix3d rot_mesh;
+        rot_mesh << -1, 0, 0, 0, 0, 1, 0, 1, 0;
+        Eigen::Quaterniond q_mesh;
+        q_mesh = q * frontleftup2rightfrontup.transpose() * rot_mesh;
+        Eigen::Vector3d t_mesh = q * Eigen::Vector3d(0, 1.5, 0) + position;
+        meshROS.pose.orientation.w = q_mesh.w();
+        meshROS.pose.orientation.x = q_mesh.x();
+        meshROS.pose.orientation.y = q_mesh.y();
+        meshROS.pose.orientation.z = q_mesh.z();
+        meshROS.pose.position.x = t_mesh(0);
+        meshROS.pose.position.y = t_mesh(1);
+        meshROS.pose.position.z = t_mesh(2);
+        meshROS.scale.x = 1.0;
+        meshROS.scale.y = 1.0;
+        meshROS.scale.z = 1.0;
+        meshROS.color.a = 1;  // 透明度
+        meshROS.color.r = 0;
+        meshROS.color.g = 1;
+        meshROS.color.b = 0;
+        // std::string mesh_resource(MESH_PATH);
+        std::string mesh_resource = "package://planning/meshes/car.dae";
+        meshROS.mesh_resource = mesh_resource;
+        ROS_INFO("Publishing Marker Array with Namespace: %s", meshROS.ns.c_str());
+
+        // 将 Marker 添加到 MarkerArray
+        marker_array.markers.push_back(meshROS);
+
+    }
+
+    pub_mesh_array_.publish(marker_array);
 }
 
 

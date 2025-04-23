@@ -70,6 +70,9 @@ public:
     std::vector<State*> HybridAStar(const State& start, const State& goal,
                                     const unordered_set<Vector2i, Vector2iHash>& obstacles_index,
                                     double wheelbase, double step_size, double max_steer);
+    // std::vector<State*> HybridAStar(const State& start, const State& goal,
+    //                                     const unordered_set<Vector2i, Vector2iHash>& obstacles_index,
+    //                                     double wheelbase, double step_size, double max_steer);
                                     
     // // HybridAStar + take BFS as heuristic function
     // std::vector<State*> HybridAStar_BFS_as_Heuristic(const State& start, const State& goal,

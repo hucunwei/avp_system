@@ -7,6 +7,7 @@
 #include <tuple>
 #include <unordered_set>
 #include <vector>
+// #include <cmath>  // 包含 atan2 和 M_PI
 
 namespace {
 // parameters for slot
@@ -47,6 +48,23 @@ enum SemanticLabel {
 
 struct Slot {
   Eigen::Vector3d corners_[4];
+  Eigen::Vector3d slot_center;
+  int avaibility;
+  double yaw;
+  Eigen::AlignedBox3d bounding_box;  // bounding box of slot corners
+  // bool contains = bounding_box.contains(point);
+
+  void updateBoundingBox2() {
+    // 遍历所有角点，
+    // std::cout << "Checking slots corner:" << std::endl;
+    for (int i = 0; i < 4; ++i) {
+      corners_[i].z() = 0;
+      // std::cout << "corner " << i << " z-value = " << corners_[i].z() << std::endl;
+      bounding_box.extend(corners_[i]);
+    }
+
+  }
+
 };
 
 // slot cornerPoints

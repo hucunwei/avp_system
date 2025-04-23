@@ -7,6 +7,7 @@
 #include <nav_msgs/Path.h>
 #include <tf/transform_broadcaster.h>
 #include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
 #include "avp_map.h"
 #include "slot.h"
 
@@ -23,6 +24,8 @@ public:
     void publishPose(const TimedPose &pose);
 
     void publishGoalPose(const TimedPose &pose);
+
+    void publishArrayPoses(const std::vector<TimedPose> &poses);
 
     void publishGTpose(const double time, Eigen::Quaterniond q, Eigen::Vector3d position);
 
@@ -41,7 +44,7 @@ private:
 
     ros::NodeHandle &nh_;
     nav_msgs::Path path_, gt_path_, planned_path_, planned_A_path_, planned_hybridA_path_;
-    ros::Publisher pub_path_, pub_odometry_, pub_mesh_, pub_mesh2_, pub_gt_path_, pub_planned_path_, pub_planned_A_path_, pub_planned_hybridA_path_;
+    ros::Publisher pub_path_, pub_odometry_, pub_mesh_, pub_mesh2_,pub_mesh_array_, pub_gt_path_, pub_planned_path_, pub_planned_A_path_, pub_planned_hybridA_path_;
     ros::Publisher pub_global_dash_pts_, pub_global_arrow_pts_, pub_global_slot_pts_;
     ros::Publisher pub_current_pts_;
     ros::Publisher pub_slot_marker_, pub_slot_marker_ipm_;

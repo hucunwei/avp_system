@@ -1,10 +1,15 @@
 <?xml version="1.0"?>
 <launch>
+  <!-- 加载 全局参数 -->
+  <rosparam command="load" file="$(find planning)/config/planning_config.yaml" />
 
-  <node pkg="planning" type="planning_node" respawn="false" name="planning" output="screen">
-    <rosparam file="$(find planning)/config/planning_config.yaml" command="load" />
-  </node>
-
+  <!-- 启动可视化 rivi 文件 -->
   <node name="rviz_planning" pkg="rviz" type="rviz" args="-d $(find planning)/src/ros_viewer/planning.rviz"/>
+
+  <!-- 启动节点 planning_node -->
+  <node pkg="planning" type="planning_node"  name="planning" output="screen" /> 
+  <!-- respawn="false",  -->
+
+  
   
 </launch>
