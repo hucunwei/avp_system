@@ -1,0 +1,42 @@
+module: controller
+## 这里包括了 Planning & Controller 的参数
+## Planning 模块 输入文件
+
+# 输入 map.bin 文件路径
+# map_bin_input_path: /home/wes/mvp_final/avp_system/src/modules/planning/data/avp_map.bin            # 作业的 建图文件（测试）
+map_bin_input_path: /home/wes/mvp_final/avp_system/src/modules/planning/data/avp_map_sim.bin      # 仿真器的 建图文件
+
+# 所有话题
+topics:
+  ##  
+  # 终点位姿 话题： 
+  #   Rviz 2D Navigation Goal 发布
+  #   Planning      订阅
+  navGoal: /move_base_simple/goal
+
+  # 语义定位 话题： 
+  #   localization  发布
+  #   planning      订阅
+  #   controller    订阅
+  localization_odom: /localization/out_pose
+
+  # 真实定位 话题： 
+  #   仿真器         发布
+  #   planning      订阅
+  #   controller    订阅
+  truth_odom: /gps_odom
+  
+  # 规划路径 1 & 2 话题： 
+  #   planning      发布
+  #   controller    订阅
+  planning_path_1: /planning_node/planned_A_path
+  planning_path_2: /planning_node/planned_hybridA_path
+  # planning_path: /planning_node/planned_hybridA_path
+
+  # 车的底盘状态 话题： 
+  #   controller    订阅
+  chassis: /chassis
+
+  # 控制信号 话题：
+  #   controller    发布
+  control_command: /vehicle_cmd

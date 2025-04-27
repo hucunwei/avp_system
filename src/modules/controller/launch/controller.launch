@@ -1,10 +1,16 @@
 <?xml version="1.0"?>
 <launch>
+  <!-- 加载 全局参数 -->
+  <rosparam file="$(find controller)/config/controller_config.yaml" command="load" />
 
-  <node pkg="controller" type="controller_node" respawn="false" name="controller" output="screen">
-    <rosparam file="$(find controller)/config/controller_config.yaml" command="load" />
-  </node>
+  <!-- 启动可视化 rivi 文件 -->
+  <node name="rviz_controller" pkg="rviz" type="rviz" args="-d $(find controller)/src/ros_viewer/planning_controller.rviz"/>
+  <!-- <node name="rviz_controller" pkg="rviz" type="rviz" args="-d $(find controller)/src/ros_viewer/controller.rviz"/> -->
+  
+  <!-- 启动节点 planning_node -->
+  <node pkg="planning" type="planning_node"  name="planning" output="screen" /> 
 
-  <node name="rviz_controller" pkg="rviz" type="rviz" args="-d $(find controller)/src/ros_viewer/controller.rviz"/>
+  <!-- 启动节点 controller_node -->
+  <node pkg="controller" type="controller_node" respawn="false" name="controller" output="screen" />
   
 </launch>

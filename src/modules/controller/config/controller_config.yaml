@@ -1,1 +1,25 @@
 module: controller
+
+#输入 map.bin 文件路径
+# map_bin_input_path: /home/wes/mvp_final/avp_system/src/modules/planning/data/avp_map.bin            # 作业的 建图文件（测试）
+map_bin_input_path: /home/wes/mvp_final/avp_system/src/modules/planning/data/avp_map_sim.bin      # 仿真器的 建图文件
+
+# 所有话题
+topics:
+  # 订阅话题： 2D Navigation Goal
+  navGoal: /move_base_simple/goal
+
+  # 订阅话题： 语义 定位
+  localization_odom: /localization/out_pose
+  # 订阅话题： 真实 定位
+  truth_odom: /gps_odom
+  # 订阅话题： 规划路径
+  planning_path_1: /planning_node/planned_A_path
+  planning_path_2: /planning_node/planned_hybridA_path
+  # planning_path: /planning_node/planned_hybridA_path
+
+  # 订阅话题： 车的底盘状态
+  chassis: /chassis
+
+  # 发布话题：控制信号
+  control_command: /vehicle_cmd
