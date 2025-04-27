@@ -25,7 +25,7 @@ struct Vector2iHash {
     }
 };
 
-constexpr double min_angle_diff = M_PI/12;
+// constexpr double min_angle_diff = M_PI/12;
 
 // 定义车辆状态
 struct State {
@@ -46,11 +46,11 @@ struct State {
     // 因为使用了 std::unordered_set<State, StateHash> 和 std::unordered_map<State, double, StateHash>
     // State 类型 需要支持 相等性 比较操作符 operator==
     // 如果未定义，编译器会报错
-    bool operator==(const State& other) const {
-        return std::fabs(x - other.x) < 0.5 && //1e-1
-            std::fabs(y - other.y) < 0.5 &&
-            std::fabs(theta - other.theta) < min_angle_diff; // 1e-1
-    }
+    // bool operator==(const State& other) const {
+    //     return std::fabs(x - other.x) < 0.5 && //1e-1
+    //         std::fabs(y - other.y) < 0.5 &&
+    //         std::fabs(theta - other.theta) < min_angle_diff; // 1e-1
+    // }
 };
 
 
@@ -83,7 +83,7 @@ public:
     //                                 const unordered_set<Vector2i, Vector2iHash>& obstacles_index,
     //                                 double wheelbase, double step_size, double max_steer);
     // // Mixed Method: HybridAStar + RS 曲线
-    // std::vector<State*> HybridAStar_Mixed_RS(const State& start, const State& goal,
+    // std::vector<State*> Reeds_Shepp(const State& start, const State& goal,
     //                                 const unordered_set<Vector2i, Vector2iHash>& obstacles_index,
     //                                 double wheelbase, double step_size, double max_steer);
     // // Mixed Method: HybridAStar + Dubins 曲线

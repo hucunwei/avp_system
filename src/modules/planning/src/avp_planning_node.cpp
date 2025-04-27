@@ -197,13 +197,14 @@ int main(int argc, char **argv) {
 
     // 读取 config/planning_config.yaml文件 文件路径 和 话题名 参数
     // 1. 初始化变量
-    std::string map_bin_path = "/home/wes/mvp_final/avp_system/src/modules/planning/data/avp_map.bin";      // 作业的 建图文件（测试）
-    // std::string map_bin_path = "/home/wes/mvp_final/avp_system/src/modules/planning/data/avp_map_sim.bin";  // 仿真器的 建图文件
+    // std::string map_bin_path = "/home/wes/mvp_final/avp_system/src/modules/planning/data/avp_map.bin";      // 作业的 建图文件（测试）
+    std::string map_bin_path = "/home/wes/mvp_final/avp_system/src/modules/planning/data/avp_map_sim.bin";  // 仿真器的 建图文件
     std::string navGoal = "/move_base_simple/goal";                      // Rivz 鼠标输入， 2D Navigation Goal
     std::string localization_odom = "/localization/out_pose";            // 通过 定位模块 实时语义定位， 提供 实时位姿， 出发点 start 需要 初始位姿 
     std::string truth_odom = "/gps_odom";                                // 通过 仿真器 实时定位， 提供 实时位姿， 出发点 start 需要 初始位姿 
     // 2. 从参数服务器读取参数，并提供默认值
-    nh.param<std::string>("map_bin_input_path",map_bin_path , "/home/wes/mvp_final/avp_system/src/modules/planning/data/avp_map.bin");
+    // nh.param<std::string>("map_bin_input_path",map_bin_path , "/home/wes/mvp_final/avp_system/src/modules/planning/data/avp_map.bin");
+    nh.param<std::string>("map_bin_input_path",map_bin_path , "/home/wes/mvp_final/avp_system/src/modules/planning/data/avp_map_sim.bin");
     nh.param<std::string>("topics/navGoal", navGoal, "/move_base_simple/goal"); 
     nh.param<std::string>("topics/localization_odom", localization_odom, "/localization/out_pose");
     nh.param<std::string>("topics/truth_odom", truth_odom, "/gps_odom");
@@ -227,6 +228,9 @@ int main(int argc, char **argv) {
     startPose.time_ = 0;                                    // 做 测试， 待删除
     startPose.t_= Eigen::Vector3d(19, 16, 0);               // 做 测试， 待删除
     startPose.R_ = Eigen::Quaterniond(1, 0, 0, 0);          // 做 测试， 待删除
+    double startPose_yaw = GetYaw(startPose.R_);
+    double startPose_degree = startPose_yaw * kToDeg;
+    ROS_INFO("=== startPose_yaw = %d,  degree = ", startPose_yaw, startPose_degree);
     rosViewer.publishPose(startPose);
 
     // 生成 障碍点 obstacles
@@ -240,7 +244,7 @@ int main(int argc, char **argv) {
     }
 
     // 2. 障碍点 obstacles 转成 2D 障碍网格 grid coordinate, with resolution 0.5m*0.5m 
-    double resolution = 0.5;    //1.5， 0.5
+    double resolution = 2.0;    //1.5，1.0, 0.5
     Vector2i start_index(round(startPose.t_(0) / resolution),   // convert startPose to grid index
                    round(startPose.t_(1) / resolution));
 
@@ -278,6 +282,7 @@ int main(int argc, char **argv) {
         // if (path.empty()) {
         //     ROS_WARN("Fail to find BFS path");
         // } else {
+        //     // path 的 每个点 是 grid 值 (x_index, y_index)，  把 grid 值 (x_index, y_index) 转成 真实值 （x,y） 
         //     std::vector<Eigen::Vector2d> path_points;
         //     for (auto &index : path) {
         //         Eigen::Vector2d tmp (index.x() * resolution, index.y() * resolution);
@@ -286,43 +291,74 @@ int main(int argc, char **argv) {
         //     rosViewer.publishTrajectory(path_points);
         // }
 
-        // // A*
-        // vector<Vector2i> pathA = planner.AStar(start_index, goal_index, obstacles_index);
-        // int AStar_size = pathA.size();
-        // ROS_INFO("AStar Planner:");
-        // ROS_INFO("Position: [AStar path.size() = %d", AStar_size);
-        // // publish result
-        // if (path.empty()) {
-        //     ROS_WARN("Fail to find A* path");
-        // } else {
-        //     std::vector<Eigen::Vector2d> path_points;
-        //     for (auto &index : pathA) {
-        //         Eigen::Vector2d tmp (index.x() * resolution, index.y() * resolution);
-        //         path_points.emplace_back(tmp);
-        //     }
-        //     rosViewer.publishATrajectory(path_points);
-        // }
-
-        // 车辆参数  for hybrid A*
-        double wheelbase = 2.5;   // 轴距
-        double step_size = 0.5;   // 步长
-        double max_steer = M_PI / 4; // 最大转向角（45度）
-        State startState(startPose.t_(0), startPose.t_(1), M_PI / 2, 0, 0, nullptr);
-        State goalState(goal.x(), goal.y(), goal_yaw, 0, 0, nullptr);
-        std::vector<State*> hybridApath = planner.HybridAStar(startState, goalState,
-                                                               obstacles_index,
-                                                                wheelbase, step_size, max_steer);
+        // The first part of Path: From startPose to readyPose
+        // Using A*  
+        TimedPose readyPoses_right = readyPoses[1];     // TimedPose readyPoses_left = readyPoses[0];
+        Vector2i ready_index(round(readyPoses_right.t_(0) / resolution), round(readyPoses_right.t_(1) / resolution));  // convert startPose to grid index
+        vector<Vector2i> pathA = planner.AStar(start_index, ready_index, obstacles_index);
+        int AStar_size = pathA.size();
+        ROS_INFO("AStar Planner:");
+        ROS_INFO("Position: [AStar path.size() = %d", AStar_size);
         // publish result
-        if (hybridApath.empty()) {
-            ROS_WARN("Fail to find Hybrid A* path");
+        if (pathA.empty()) {
+            ROS_WARN("Fail to find A* path");
         } else {
+            // pathA 的 每个点 是 grid 值 (x_index, y_index)，  把 grid 值 (x_index, y_index) 转成 真实值 （x,y） 
             std::vector<Eigen::Vector2d> path_points;
-            for (auto &pState : hybridApath) {
-                Eigen::Vector2d tmp (pState->x, pState->y);
+            for (auto &index : pathA) {
+                Eigen::Vector2d tmp (index.x() * resolution, index.y() * resolution);
+                path_points.emplace_back(tmp);
+            }
+            rosViewer.publishATrajectory(path_points);
+        }
+
+        // The second part of Path: From readyPose to goalPose
+        // using A*
+        vector<Vector2i> pathA2 = planner.AStar(ready_index, goal_index, obstacles_index);
+        int AStar_2_size = pathA2.size();
+        ROS_INFO("AStar Planner 2:");
+        ROS_INFO("Position: [AStar pathA2.size() = %d", AStar_2_size);
+        // publish result
+        if (pathA2.empty()) {
+            ROS_WARN("Fail to find A* path 2");
+        } else {
+            // pathA 的 每个点 是 grid 值 (x_index, y_index)，  把 grid 值 (x_index, y_index) 转成 真实值 （x,y） 
+            std::vector<Eigen::Vector2d> path_points;
+            for (auto &index : pathA2) {
+                Eigen::Vector2d tmp (index.x() * resolution, index.y() * resolution);
                 path_points.emplace_back(tmp);
             }
             rosViewer.publishHybridATrajectory(path_points);
         }
+
+        // // The second part of Path: From readyPose to goalPose
+        // // using hybrid A*
+        // double wheelbase = 2.5;          // 轴距
+        // double step_size = resolution;   // 步长 (= 速度 * 单位时间) 0.5，1.0，1.5 让 step_size = 障碍物的尺寸 resolution 
+        // double max_steer = M_PI / 4;     // 最大转向角（45度）
+        // double readyPoses_yaw = GetYaw(readyPoses_right.R_);
+        // ROS_INFO("=== readyPoses_yaw = %d", readyPoses_yaw);
+        // double readyPoses_degree = readyPoses_yaw * kToDeg;
+        // ROS_INFO("=== readyPoses_yaw = %d,  degree = ", readyPoses_yaw, readyPoses_degree);    
+        // State startState(readyPoses_right.t_(0), readyPoses_right.t_(1), readyPoses_yaw, 0, 0, nullptr);
+        // State goalState(goal.x(), goal.y(), goal_yaw, 0, 0, nullptr);
+        // std::vector<State*> hybridApath = planner.HybridAStar(startState, goalState,
+        //                                                        obstacles_index,
+        //                                                         wheelbase, step_size, max_steer);
+        // // publish result
+        // if (hybridApath.empty()) {
+        //     ROS_WARN("Fail to find Hybrid A* path");
+        // } else {
+            
+        //     std::vector<Eigen::Vector2d> path_points;
+        //     for (auto &pState : hybridApath) {
+        //         Eigen::Vector2d tmp (pState->x, pState->y);
+        //         path_points.emplace_back(tmp);
+        //     }
+        //     rosViewer.publishHybridATrajectory(path_points);
+        // }
+
+
 
     }
 

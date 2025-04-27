@@ -7,17 +7,20 @@ Planner::Planner() {
 
 }
 
+// 定义常量
+const double PI = M_PI;
+const double INF = numeric_limits<double>::infinity();
 
 vector<Vector2i> Planner::Bfs(const Vector2i &start, const Vector2i &goal,
                      const unordered_set<Vector2i, Vector2iHash>& obstacles) {
     // 定义四个方向的移动：上、右、下、左（注释掉原来的版本）
-    vector<pair<int, int>> directions = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
+    // vector<pair<int, int>> directions = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
     
     // 定义八个方向的移动：上、右上、右、右下、下、左下、左、左上
-    // vector<pair<int, int>> directions = {
-    //     {0, 1}, {1, 1}, {1, 0}, {1, -1}, 
-    //     {0, -1}, {-1, -1}, {-1, 0}, {-1, 1}
-    // };
+    vector<pair<int, int>> directions = {
+        {0, 1}, {1, 1}, {1, 0}, {1, -1}, 
+        {0, -1}, {-1, -1}, {-1, 0}, {-1, 1}
+    };
     
     // 使用队列进行BFS搜索
     queue<Vector2i> q;
@@ -43,12 +46,12 @@ vector<Vector2i> Planner::Bfs(const Vector2i &start, const Vector2i &goal,
             break;
         }
         
-        // 探索八个方向
+        // 探索 四（或八）个方向
         for (const auto& dir : directions) {
             Vector2i next(current.x() + dir.first, current.y() + dir.second);
             
             // 检查是否已访问或是障碍物
-            if (visited.count(next) == 0 && obstacles.count(next) == 0) {
+            if (visited.count(next) == 0 && obstacles.count(next) == 0) { //unordered_set::count  判断某个元素 是否存在于 unordered_set 集合中
                 visited.insert(next);
                 q.push(next);
                 parent[next] = current;
@@ -75,13 +78,13 @@ vector<Vector2i> Planner::Bfs(const Vector2i &start, const Vector2i &goal,
 vector<Vector2i> Planner::AStar(const Vector2i &start, const Vector2i &goal,
                                 const unordered_set<Vector2i, Vector2iHash>& obstacles) {
     // 定义四个方向的移动：上、右、下、左（注释掉原来的版本）
-    vector<pair<int, int>> directions = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
+    // vector<pair<int, int>> directions = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
     
     // 定义八个方向的移动：上、右上、右、右下、下、左下、左、左上
-    // vector<pair<int, int>> directions = {
-    //     {0, 1}, {1, 1}, {1, 0}, {1, -1}, 
-    //     {0, -1}, {-1, -1}, {-1, 0}, {-1, 1}
-    // };
+    vector<pair<int, int>> directions = {
+        {0, 1}, {1, 1}, {1, 0}, {1, -1}, 
+        {0, -1}, {-1, -1}, {-1, 0}, {-1, 1}
+    };
     
     // 使用优先队列进行A*搜索
     auto cmp = [](const pair<Vector2i, double>& a, const pair<Vector2i, double>& b) {
@@ -93,7 +96,13 @@ vector<Vector2i> Planner::AStar(const Vector2i &start, const Vector2i &goal,
     auto h = [&goal](const Vector2i& pos) {
         return abs(pos.x() - goal.x()) + abs(pos.y() - goal.y());
     };
-    
+    // // 启发式函数：欧几里得距离
+    // auto h = [&goal](const Vector2i& pos) {
+    //     double dx = static_cast<double>(pos.x() - goal.x());
+    //     double dy = static_cast<double>(pos.y() - goal.y());
+    //     return sqrt(dx * dx + dy * dy);
+    // };
+
     // g值：从起点到当前节点的实际代价
     unordered_map<Vector2i, double, Vector2iHash> g_score;
     g_score[start] = 0;
@@ -111,7 +120,7 @@ vector<Vector2i> Planner::AStar(const Vector2i &start, const Vector2i &goal,
     
     // A*主循环
     while (!pq.empty() && !found) {
-        Vector2i current = pq.top().first;
+        Vector2i current = pq.top().first;  // 最小f值的节点
         pq.pop();
         
         // 如果已经处理过该节点，跳过
@@ -137,6 +146,7 @@ vector<Vector2i> Planner::AStar(const Vector2i &start, const Vector2i &goal,
             
             // 计算新的g值 (对角线移动距离为√2)
             double movement_cost = (abs(dir.first) + abs(dir.second) == 2) ? 1.414 : 1.0;
+            // double movement_cost = 1.0;
             double tentative_g = g_score[current] + movement_cost;
             
             // 如果是新节点或找到了更好的路径
@@ -171,10 +181,10 @@ std::vector<State*> Planner::HybridAStar(const State& start, const State& goal,
     // 先使用A*算法获取一条网格路径，用于指导Hybrid A*搜索
     Vector2i start_index(round(start.x / step_size), round(start.y / step_size));
     Vector2i goal_index(round(goal.x / step_size), round(goal.y / step_size));
-    vector<Vector2i> astar_path = AStar(start_index, goal_index, obstacles_index);
+    vector<Vector2i> astar_path = AStar(start_index, goal_index, obstacles_index);  // path 的 每个点 是 grid 值 (x_index, y_index)
     
     // 将A*路径点转换成查找表，用于快速计算启发式函数
-    unordered_map<Vector2i, int, Vector2iHash> astar_path_lookup;
+    unordered_map<Vector2i, int, Vector2iHash> astar_path_lookup;       
     for (int i = 0; i < astar_path.size(); ++i) {
         astar_path_lookup[astar_path[i]] = i;
     }
@@ -229,7 +239,8 @@ std::vector<State*> Planner::HybridAStar(const State& start, const State& goal,
         double dx = s->x - goal.x;
         double dy = s->y - goal.y;
         double distance = sqrt(dx*dx + dy*dy);
-        return distance < step_size;
+        // double theta_diff = std::abs(s->theta - goal.theta);
+        return distance < step_size; //  && theta_diff <= (M_PI / 18.0) xy_distance 小于 step_size 且 theta_diff < 10度
     };
     
     // 检查状态是否碰撞障碍物
@@ -253,7 +264,8 @@ std::vector<State*> Planner::HybridAStar(const State& start, const State& goal,
     
     // 转向角度列表
     vector<double> steer_angles = {-max_steer, -max_steer/2, 0, max_steer/2, max_steer};
-    
+    // vector<double> step_size_ranges = {-step_size, step_size}; // 前全速 (速度单位： 单位时间 pixel 数)
+
     // Hybrid A*主循环
     while (!open_list.empty()) {
         // 取出f值最小的状态
@@ -283,11 +295,12 @@ std::vector<State*> Planner::HybridAStar(const State& start, const State& goal,
         
         // 对每个可能的转向角度，生成下一个状态
         for (double steer : steer_angles) {
+            
             // 计算前轮位置
             double beta = atan(tan(steer) / 2.0);
             
             // 应用自行车模型
-            double new_x = current->x + step_size * cos(current->theta + beta);
+            double new_x = current->x + step_size * cos(current->theta + beta);     
             double new_y = current->y + step_size * sin(current->theta + beta);
             double new_theta = current->theta + step_size * tan(steer) / wheelbase;
             
@@ -322,3 +335,178 @@ std::vector<State*> Planner::HybridAStar(const State& start, const State& goal,
     // 如果没有找到路径，返回空路径
     return {};
 }
+
+
+
+
+
+
+// // Reeds-Shepp 曲线实现
+// std::vector<State *> Planner::Reeds_Shepp(const State &start, const State &goal,
+//                                             const unordered_set<Vector2i, Vector2iHash> &obstacles_index,
+//                                             double wheelbase, double step_size, double max_steer)
+// {
+//     // 辅助函数：规范化角度到 [-π, π]
+//     auto normalizeAngle = [](double angle) -> double {
+//         while (angle > PI) angle -= 2 * PI;
+//         while (angle < -PI) angle += 2 * PI;
+//         return angle;
+//     };
+
+//     // 辅助函数：计算两点之间的欧几里得距离
+//     auto euclideanDistance = [](double x1, double y1, double x2, double y2) -> double {
+//         return sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+//     };
+
+//     // 辅助函数：检查路径是否与障碍物碰撞
+//     auto checkCollision = [&obstacles_index](double x, double y, double step_size) -> bool {
+//         Vector2i pos(round(x / step_size), round(y / step_size));
+//         return obstacles_index.count(pos) > 0;
+//     };
+
+
+//     // 辅助函数：: 使用 Reeds-Shepp 曲线公式计算最优路径（仅支持 SCS 路径类型）
+//     auto reedsSheppPath = [&](double alpha, double beta, double d) -> vector<pair<double, double>>
+//     {
+//         // 定义路径类型及其对应的公式
+//         struct Path{
+//             vector<pair<double, double>> segments; // 路径片段 (转向角, 长度)
+//             double total_length;                  // 总路径长度
+//         };
+
+//         // Step 2: 使用 Reeds-Shepp 曲线公式计算最优路径（仅支持 SCS 路径类型）
+
+//         // 辅助函数：计算 Straight-Circle-Straight (SCS) 类型路径
+//         auto computeSCS = [&](double alpha, double beta, double d) -> Path
+//         {
+//             double sa = sin(alpha), sb = sin(beta);
+//             double ca = cos(alpha), cb = cos(beta);
+
+//             // 计算中间变量
+//             double tmp0 = d * d - 2 * (sa - sb) * d + 2 * (1 - ca * cb - sa * sb);
+//             if (tmp0 < 0)
+//                 return Path{{}, INF}; // 无解
+
+//             double tmp1 = atan2(cb - ca, d + sb - sa);
+//             double t = normalizeAngle(-alpha + tmp1); // 第一段直线
+//             double u = sqrt(tmp0);                    // 圆弧长度
+//             double v = normalizeAngle(beta - tmp1);   // 第二段直线
+            
+//             std::cout << "tmp0 = " << tmp0 << ", tmp1 = " << tmp1 << std::endl;
+//             std::cout << "t = " << t << ", u = " << u << ", v = " << v << std::endl;
+//             // 返回路径片段
+//             return Path{
+//                 .segments = {
+//                     {0, abs(t)}, // 直线段
+//                     {1, abs(u)}, // 正向圆弧
+//                     {0, abs(v)}  // 直线段
+//                 },
+//                 .total_length = abs(t) + abs(u) + abs(v)};
+//         };
+
+//         // 计算所有可能的 SCS 路径类型
+//         vector<Path> candidates = {
+//             computeSCS(alpha, beta, d),
+//             computeSCS(alpha, -beta, d),
+//             computeSCS(-alpha, beta, d),
+//             computeSCS(-alpha, -beta, d)};
+
+//         // 选择最短路径
+//         Path best_path = {{}, INF};
+//         for (const auto &path : candidates)
+//         {
+//             if (path.total_length < best_path.total_length)
+//             {
+//                 best_path = path;
+//             }
+//         }
+
+//         return best_path.segments;
+//     };
+
+//     // Step 1: 将起点和目标点转换为局部坐标系
+//     double dx = goal.x - start.x;
+//     double dy = goal.y - start.y;
+//     double theta_start = start.theta;
+//     double theta_goal = goal.theta;
+//     std::cout << "--- start :  x = " << start.x << ",    y = " << start.y << ",    theta = " << start.theta << std::endl;
+//     std::cout << "--- goal  :  x = " << goal.x << ",    y = " << goal.y << ",    theta = " << goal.theta << std::endl;
+    
+//     double d = euclideanDistance(start.x, start.y, goal.x, goal.y);
+//     if (d < 1e-6){ // 起点和目标点重合
+//         return {};
+//     }
+
+//     double phi = atan2(dy, dx); // 从起点到目标点的方向角
+//     double alpha = normalizeAngle(theta_start - phi); // 起点方向相对于路径方向的偏差
+//     double beta = normalizeAngle(theta_goal - phi);   // 目标点方向相对于路径方向的偏差
+//     std::cout << "--- phi = " << phi << ",    alpha = " << alpha << ",    beta = " << beta << std::endl;
+//     // Step 2: 使用 Reeds-Shepp 曲线公式计算最优路径（仅支持 SCS 路径类型）
+//     vector<pair<double, double>> path_segments = reedsSheppPath(alpha, beta, d);
+
+//     // Step 3: 根据路径片段生成具体的状态序列
+//     vector<State *> path;
+//     double current_x = start.x;
+//     double current_y = start.y;
+//     double current_theta = start.theta;
+//     std::cout << "--- current_x = " << current_x << ",    current_y = " << current_y << ",    current_theta = " << current_theta << std::endl;
+
+//     for (const auto &segment : path_segments)
+//     {
+//         double steering = segment.first;    // 转向角 (+1 或 -1 表示正向或反向圆弧，0 表示直线)
+//         double length = segment.second;     // 路径长度
+//         std::cout << "--- steering = " << steering << ",    length = " << length << std::endl;
+
+//         int steps = static_cast<int>(length / step_size);
+//         std::cout << "--- this segment need steps = " << steps << std::endl;
+//         for (int i = 0; i < steps; ++i)
+//         {
+//             if (steering == 0) {
+//                 // 直线段
+//                 double new_x = current_x + step_size * cos(current_theta);
+//                 double new_y = current_y + step_size * sin(current_theta);
+//                 double new_theta = current_theta;
+    
+//                 current_x = new_x;
+//                 current_y = new_y;
+//                 current_theta = new_theta;
+//             } else {
+//                 // 圆弧段
+//                 double delta_theta = -step_size * tan(steering * max_steer) / wheelbase;
+//                 double new_theta = normalizeAngle(current_theta + delta_theta);
+    
+//                 double new_x = current_x + step_size * cos(new_theta);
+//                 double new_y = current_y + step_size * sin(new_theta);
+    
+//                 current_x = new_x;
+//                 current_y = new_y;
+//                 current_theta = new_theta;
+//             }
+    
+
+//             // 检查碰撞
+//             if (checkCollision(current_x, current_y, step_size)) {
+//                 std::cout << "--- Collision:  current_x = " << current_x << ",    current_y = " << current_y << ",    step_size = " << step_size << std::endl;
+//                 // // 如果发生碰撞，清空路径并返回
+//                 // for (auto *state : path)
+//                 //     delete state;
+//                 // return {};
+//                 return path;
+//             }
+
+//             // 创建新状态并加入路径
+//             std::cout << "--- path point :  (x,y,theta) = (" << current_x << ", " << current_y << ", " << current_theta <<")"<< std::endl;
+//             State *new_state = new State(current_x, current_y, current_theta, 0, 0, nullptr);
+//             path.push_back(new_state);
+
+//             // // 更新当前状态
+//             // current_x = new_x;
+//             // current_y = new_y;
+//             // current_theta = new_theta;
+//         }
+//     }
+
+//     std::cout << "--- end RS path --- " << std::endl;
+//     // Step 4: 返回生成的路径
+//     return path;
+// }
